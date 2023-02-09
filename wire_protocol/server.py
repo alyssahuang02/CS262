@@ -10,6 +10,8 @@ PORT = 65431  # Port to listen on (non-privileged ports are > 1023)
 
 # queue containing all messages; c
 # TODO: can we put metadata to indicate who the intended recipient is?
+
+# before we queue it onto the message 
 messages = []
 accounts = {}
 
@@ -22,12 +24,18 @@ sel.register(lsock, selectors.EVENT_READ, data=None)
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
-    # for account in accounts:
-    #     conn.send(account)
+    
     print(f"Accepted connection from {addr}")
-    # Prompt the user on what username??
+    # Create user account
+    conn.send(b"What's your username?")
+    recv_data = conn.recv(1024)
+    if recv_data in accounts.keys():
+        print("ISSUE")
+    
+
     conn.setblocking(False)
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
+    print("Data", data)
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(conn, events, data=data)
 
@@ -60,7 +68,6 @@ def service_connection(key, mask):
 try:
     while True:
         events = sel.select(timeout=None)
-        print(key, key.data)
         for key, mask in events:
             if key.data is None:
                 accept_wrapper(key.fileobj)
@@ -70,4 +77,5 @@ try:
 except KeyboardInterrupt:
     print("Caught keyboard interrupt, exiting")
 finally:
+    print("Close")
     sel.close()
