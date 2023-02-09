@@ -6,11 +6,12 @@ import types
 sel = selectors.DefaultSelector()
 
 HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
-PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+PORT = 65431  # Port to listen on (non-privileged ports are > 1023)
 
 # queue containing all messages; c
 # TODO: can we put metadata to indicate who the intended recipient is?
 messages = []
+accounts = {}
 
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.bind((HOST, PORT))
@@ -21,7 +22,10 @@ sel.register(lsock, selectors.EVENT_READ, data=None)
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
+    # for account in accounts:
+    #     conn.send(account)
     print(f"Accepted connection from {addr}")
+    # Prompt the user on what username??
     conn.setblocking(False)
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
@@ -56,6 +60,7 @@ def service_connection(key, mask):
 try:
     while True:
         events = sel.select(timeout=None)
+        print(key, key.data)
         for key, mask in events:
             if key.data is None:
                 accept_wrapper(key.fileobj)
