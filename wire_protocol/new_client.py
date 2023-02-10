@@ -40,6 +40,8 @@ users = client.recv(2048)
 users_arr = pickle.loads(users)
 print(users_arr)
 
+# send a message - maybe commands of who to send a message to
+
 # print("continue")
 # # receive 
 # data = client.recv(2048)
