@@ -17,6 +17,7 @@ accounts = {}
 
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.bind((HOST, PORT))
+# accept connections on that port
 lsock.listen()
 print(f"Listening on {(HOST, PORT)}")
 lsock.setblocking(False)
@@ -37,6 +38,7 @@ def accept_wrapper(sock):
     data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
     print("Data", data)
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
+    print("events", events)
     sel.register(conn, events, data=data)
 
 def service_connection(key, mask):
@@ -76,6 +78,6 @@ try:
 
 except KeyboardInterrupt:
     print("Caught keyboard interrupt, exiting")
-finally:
-    print("Close")
-    sel.close()
+# finally:
+#     print("Close")
+#     sel.close()
