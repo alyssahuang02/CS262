@@ -17,12 +17,20 @@ def send(msg):
     send_length += b' ' * (HEADER - len(send_length))
     client.send(send_length)
     client.send(message)
-    print(client.recv(2048).decode(FORMAT))
+    
+    data = client.recv(2048).decode(FORMAT)
+    print(data)
+    return data
 
-send("Hello World!")
-input()
-send("Hello Everyone!")
-input()
-send("Hello Tim!")
+start = send("initial")
+if start == "What's your username?":
+    username = input()
+    send(username)
 
-send(DISCONNECT_MESSAGE)
+# send("Hello World!")
+# input()
+# send("Hello Everyone!")
+# input()
+# send("Hello Tim!")
+
+# send(DISCONNECT_MESSAGE)
