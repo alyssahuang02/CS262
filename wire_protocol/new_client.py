@@ -1,4 +1,5 @@
 import socket
+import pickle
 
 HEADER = 64
 PORT = 5050
@@ -22,10 +23,27 @@ def send(msg):
     print(data)
     return data
 
-start = send("initial")
+logged_in = False
+start = client.recv(2048).decode(FORMAT)
+print("start", start)
+
 if start == "What's your username?":
-    username = input()
-    send(username)
+    while not logged_in:
+        username = input()
+        data = send(username)
+
+        if data == "Logged in!":
+            logged_in = True
+
+
+users = client.recv(2048)
+users_arr = pickle.loads(users)
+print(users_arr)
+
+# print("continue")
+# # receive 
+# data = client.recv(2048)
+# data_arr = pickle.loads(data)
 
 # send("Hello World!")
 # input()

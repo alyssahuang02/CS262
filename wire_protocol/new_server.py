@@ -1,5 +1,6 @@
 import socket 
 import threading
+import pickle
 
 # bytes for the metadata of how long the message is, then cater the actual size
 HEADER = 64
@@ -18,13 +19,34 @@ accounts = {}
 
 def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
+    logged_in = False
+    current_user = None
 
-    conn.send("What's your username?".encode(FORMAT))
-    msg_length = conn.recv(HEADER).decode(FORMAT)
-    msg_length = int(msg_length)
-    msg = conn.recv(msg_length).decode(FORMAT)
-    
-    print(f"[{addr}] {msg}")
+    # establish username
+    while not logged_in:
+        conn.send("What's your username?".encode(FORMAT))
+        msg_length = conn.recv(HEADER).decode(FORMAT)
+        msg_length = int(msg_length)
+        username = conn.recv(msg_length).decode(FORMAT)
+        
+        print(f"[{addr}] {username}")
+
+        if username in accounts.keys():
+            conn.send("Username already exists. What's your username?".encode(FORMAT))
+            print("username already exists")
+        else:
+            accounts[username] = addr
+            current_user = username
+            logged_in = True
+            conn.send("Logged in!".encode(FORMAT))
+
+
+    # send current users
+    print("current users")
+
+    data_string = pickle.dumps(list(accounts.keys()))
+    conn.send(data_string)
+
 
     connected = True
     while connected:
