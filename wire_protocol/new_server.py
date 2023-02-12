@@ -24,7 +24,8 @@ class ChatServer:
         self.active_accounts = {} # {username: addr}
 
     def login_user(self, conn, addr):
-        self.send("What's your username?".encode(FORMAT), conn)
+        logged_in = False
+        self.send("What's your username?", conn)
         username = self.receive(conn)
         
         print(f"[{addr}] {username}")
@@ -34,10 +35,12 @@ class ChatServer:
         else:
             # Log in user
             self.active_accounts[username] = addr
+            logged_in = True
         
-        return username
+        return (username, logged_in)
 
     def register_user(self, conn, addr):
+        registered = False
         self.send("What's your username?", conn)
         username = self.receive(conn)
         
@@ -50,8 +53,9 @@ class ChatServer:
             self.active_accounts[username] = addr
             self.accounts.append(username)
             self.unsent_messages[username] = []
+            registered = True
         
-        return username
+        return (username, registered)
 
     def record_chat_message(self, conn, addr):
         # Block until we get the sender's username
@@ -109,11 +113,9 @@ class ChatServer:
 
             if action == "0":
                 print("the user selected 0")
-                username = self.register_user(conn, addr)
-                logged_in = True
+                username, logged_in = self.register_user(conn, addr)
             elif action == "1":
-                username = self.login_user(conn, addr)
-                logged_in = True
+                username, logged_in = self.login_user(conn, addr)
             else:
                 self.send("Invalid input.", conn)
                 # TODO: CHANGE THIS TO WHILE LOOP LATER LOL
@@ -149,6 +151,7 @@ class ChatServer:
         conn.close()
             
     def send(self, msg, conn):
+        print(msg)
         message = msg.encode(FORMAT)
         msg_length = len(message)
         send_length = str(msg_length).encode(FORMAT)
