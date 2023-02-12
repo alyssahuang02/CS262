@@ -9,6 +9,8 @@ SERVER = socket.gethostbyname(socket.gethostname()) # TODO: WHAT IS THIS?
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
+PULL_MESSAGE = "!PULL"
+SEND_MESSAGE = "!SEND"
 LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
 SPLIT_MESSAGE = "#" # need to change this
@@ -123,8 +125,19 @@ class ChatServer:
         # TODO: some protocol for all this shit
         self.send(LOGIN_SUCCESS, conn)
 
+        while True:
+            message = self.receive(conn)
+            
+            if message == PULL_MESSAGE:
+                self.send_unsent_messages(conn, addr)
+            elif message == SEND_MESSAGE:
+                self.record_chat_message(conn, addr)
+
+
+
+
         # TODO: we have to make this a background process somehow later??
-        self.send_unsent_messages(conn, addr)
+        
 
         # TODO: add here i forgot the specs
         # conn.send("Enter 0 to send a message. Enter 1 to delete account.".encode(FORMAT))
@@ -134,7 +147,7 @@ class ChatServer:
         #     msg_length = int(msg_length)
         #     action = conn.recv(msg_length).decode(FORMAT)
         
-        self.record_chat_message(conn, addr)
+        
         
         # connected = True
         # while connected:
