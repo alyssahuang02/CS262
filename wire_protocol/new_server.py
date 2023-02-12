@@ -9,7 +9,7 @@ SERVER = socket.gethostbyname(socket.gethostname()) # TODO: WHAT IS THIS?
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-LOGIN_MESSAGE = "!LOGGEDIN"
+LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
 SPLIT_MESSAGE = "#" # need to change this
 
@@ -119,7 +119,7 @@ class ChatServer:
                 # TODO: CHANGE THIS TO WHILE LOOP LATER LOL
 
         # TODO: some protocol for all this shit
-        self.send(LOGIN_MESSAGE, conn)
+        self.send(LOGIN_SUCCESS, conn)
 
         # TODO: we have to make this a background process somehow later??
         self.send_unsent_messages(conn, addr)
