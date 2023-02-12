@@ -84,14 +84,19 @@ class ChatServer:
     def send_unsent_messages(self, conn, addr):
         for recipient in self.unsent_messages:
             messages = self.unsent_messages[recipient]
-            print(messages)
+            print("all messages for recipient: ",recipient, ": ", messages)
             for message in messages:
                 if recipient in self.active_accounts:
                     recipient_addr = self.active_accounts[recipient]
+                    print("here!!!")
                     if recipient_addr == addr:
                         # Are currently in the thread that is the recipient's connection
                         text = message[0] + " sends: " + message[1]
+                        print("TEXT COMPILED AS ", text )
+                        # self.send(message[0])
+                    
                         self.send(text, conn)
+                        print("i've sent it!")
                         # TODO: confirm message has been received
             # TODO: do this in a thread-safe way lmao
             self.unsent_messages[recipient] = []
