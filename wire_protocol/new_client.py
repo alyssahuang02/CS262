@@ -111,6 +111,7 @@ class ChatClient:
         if msg_length:
             msg_length = int(msg_length)
             response = self.client.recv(msg_length).decode(FORMAT)
+            print(response)
             return response
 
 chat_client = ChatClient()
