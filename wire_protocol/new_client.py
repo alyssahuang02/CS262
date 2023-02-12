@@ -5,9 +5,9 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
+SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some way to make it dynamic
 ADDR = (SERVER, PORT)
-LOGIN_MESSAGE = "!LOGGEDIN"
+LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
 
 class ChatClient:
@@ -19,35 +19,49 @@ class ChatClient:
         self.username = None
 
         while not self.logged_in:
-            # TODO: ensure that blocking happens here; fine cuz we have sep thread for each client
-            response = self.wait_for_response()
-            print(response)
+            self.login()
+        
+        print("Logged in!")
+        
+        # Receive messages from when they were offline
+        self.receive_messages()
+        
+        while self.logged_in:
+            # TODO: check ordering
+            self.send_chat_message()
+            self.receive_messages()
 
-            # First sends a confirmation that the user has logged in, then the username
-            if LOGIN_MESSAGE in response:
-                # TODO: ITS SENDING LIKE 3 things at once need to figure that shit out
-                # TODO: partiion messages?
-                self.logged_in = True
-                print("Logged in!")
-                self.username = user_input
-                break
-            
-            user_input = input()
-            self.send(user_input)
-        
-        # Receive all missed messages
-        while NO_MORE_DATA not in response:
-            print(response)
-            response = self.wait_for_response()
-        
-        print("No more messages.")
-        # Client decides what to do after logging in
-        # print(self.wait_for_response())
-        # action = input()
-        # self.send(action)
-        # print(action)
-        # if action == "0":
-        
+    
+    def login(self):
+        # Prints prompt from server
+        prompt = self.wait_for_response()
+        print(prompt)
+
+        # Sends user action to server
+        action = input()
+        self.send(action)
+
+        # Username prompt or "invalid input" message
+        action_response = self.wait_for_response()
+        print(action_response)
+        if action_response == "Invalid input.":
+            return
+
+        # Gets username from user and sends it to server
+        username = input()
+        print("username: " + username)
+        self.send(username)
+
+        # Gets response from server
+        response = self.wait_for_response()
+
+        # Checks if the login was successful and stores information if so
+        if response == LOGIN_SUCCESS:
+            self.logged_in = True
+            self.username = username
+
+
+    def send_chat_message(self):
         # TODO: literally zero error handling
         self.send(self.username)
 
@@ -64,6 +78,19 @@ class ChatClient:
         self.send(message)
 
         print("Message sent!")
+    
+
+    def receive_messages(self):
+        response = self.wait_for_response()
+        while response != NO_MORE_DATA:
+            print(response)
+            response = self.wait_for_response()
+        
+        print("No more messages.")
+
+    def disconnect(self):
+        pass
+
 
     def send(self, msg):
         message = msg.encode(FORMAT)
@@ -72,10 +99,15 @@ class ChatClient:
         send_length += b' ' * (HEADER - len(send_length))
         self.client.send(send_length)
         self.client.send(message)
+
     
     def wait_for_response(self):
-        data = self.client.recv(2048).decode(FORMAT)
-        return data
+        msg_length = self.client.recv(HEADER).decode(FORMAT)
+        if msg_length:
+            msg_length = int(msg_length)
+            response = self.client.recv(msg_length).decode(FORMAT)
+            return response
+        self.wait_for_response()
 
 chat_client = ChatClient()
 
