@@ -85,6 +85,7 @@ class ChatClient:
     
 
     def receive_messages(self):
+        print('hello im receiving')
         self.send(PULL_MESSAGE)
         response = self.wait_for_response()
         while response != NO_MORE_DATA:
@@ -111,7 +112,6 @@ class ChatClient:
         if msg_length:
             msg_length = int(msg_length)
             response = self.client.recv(msg_length).decode(FORMAT)
-            print(response)
             return response
 
 chat_client = ChatClient()
