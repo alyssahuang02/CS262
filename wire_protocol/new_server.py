@@ -77,6 +77,8 @@ class ChatServer:
 
         self.unsent_messages[recipient].append((sender, msg))
     
+
+    # Sends all unsent messages to the user who is currently connected at given address
     def send_unsent_messages(self, conn, addr):
         for recipient in self.unsent_messages:
             messages = self.unsent_messages[recipient]

@@ -9,6 +9,8 @@ SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some 
 ADDR = (SERVER, PORT)
 LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
+PULL_MESSAGE = "!PULL"
+SEND_MESSAGE = "!SEND"
 
 class ChatClient:
     def __init__(self):
@@ -63,6 +65,7 @@ class ChatClient:
 
 
     def send_chat_message(self):
+        self.send(SEND_MESSAGE)
         # TODO: literally zero error handling
         self.send(self.username)
 
@@ -82,6 +85,7 @@ class ChatClient:
     
 
     def receive_messages(self):
+        self.send(PULL_MESSAGE)
         response = self.wait_for_response()
         while response != NO_MORE_DATA:
             print(response)
@@ -108,7 +112,6 @@ class ChatClient:
             msg_length = int(msg_length)
             response = self.client.recv(msg_length).decode(FORMAT)
             return response
-        self.wait_for_response()
 
 chat_client = ChatClient()
 
