@@ -90,7 +90,11 @@ class ChatServer:
                 if recipient_addr == addr:
                     for message in messages:
                         text = message[0] + " sends: " + message[1]
+                        print("TEXT COMPILED AS ", text )
+                        # self.send(message[0])
+                    
                         self.send(text, conn)
+                        print("i've sent it!")
                         # TODO: confirm message has been received
                     
             # TODO: do this in a thread-safe way lmao
