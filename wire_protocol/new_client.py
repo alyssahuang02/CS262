@@ -5,7 +5,7 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = "dhcp-10-250-10-42.harvard.edu" # TODO: need to change later/have some way to make it dynamic
+SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
 ADDR = (SERVER, PORT)
 LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
@@ -85,7 +85,6 @@ class ChatClient:
     
 
     def receive_messages(self):
-        print('hello im receiving')
         self.send(PULL_MESSAGE)
         response = self.wait_for_response()
         while response != NO_MORE_DATA:
