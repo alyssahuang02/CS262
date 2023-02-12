@@ -49,16 +49,17 @@ class ChatClient:
 
         # Gets username from user and sends it to server
         username = input()
-        print("username: " + username)
         self.send(username)
 
-        # Gets response from server
+        # Gets response from server (either success or error message)
         response = self.wait_for_response()
 
         # Checks if the login was successful and stores information if so
         if response == LOGIN_SUCCESS:
             self.logged_in = True
             self.username = username
+        else:
+            print(response)
 
 
     def send_chat_message(self):
