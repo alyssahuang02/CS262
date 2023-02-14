@@ -13,7 +13,11 @@ PULL_MESSAGE = "!PULL"
 SEND_MESSAGE = "!SEND"
 LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
-SPLIT_MESSAGE = "#" # need to change this
+PURPOSE = "!PURPOSE:"
+SEPARATOR = "/"
+MAX_BANDWIDTH = 2048
+BODY = "!BODY:"
+LENGTH = "!LENGTH:"
 
 class ChatServer:
     def __init__(self):
@@ -168,7 +172,8 @@ class ChatServer:
         #         conn.send("Msg received".encode(FORMAT))
 
         conn.close()
-            
+
+    
     def send(self, msg, conn):
         print(msg)
         message = msg.encode(FORMAT)
@@ -178,15 +183,23 @@ class ChatServer:
         conn.send(send_length)
         conn.send(message)
 
-    def receive(self, conn):
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            action = conn.recv(msg_length).decode(FORMAT)
 
-            return action
-        else:
-            return "ERROR"
+    # Return a dictionary representation of the message
+    def receive(self, conn):
+        full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
+        split_message = full_message.split("/")
+        parsed_message = {}
+        for i in range(len(split_message)):
+            part = split_message[i]
+            if part != BODY:
+                parsed_message[part] = split_message[i+1]
+                i += 1
+            else:
+                body = split_message[i+1:].join("/")
+                length = int(parsed_message[LENGTH])
+                parsed_message[part] = body[:length]
+                break
+        return parsed_message
 
         
     # Notes: new thread for each client! (do we have to log them out?)
