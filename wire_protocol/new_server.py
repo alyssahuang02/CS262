@@ -27,7 +27,7 @@ class ChatServer:
 
     def login_user(self, conn, addr):
         logged_in = False
-        self.send("What's your username?", conn)
+        # self.send("What's your username?", conn)
         username = self.receive(conn)
         
         print(f"[{addr}] {username}")
