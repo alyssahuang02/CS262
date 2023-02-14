@@ -11,6 +11,14 @@ LOGIN_SUCCESS = "!LOGGEDIN"
 NO_MORE_DATA = "!NOMOREDATA"
 PULL_MESSAGE = "!PULL"
 SEND_MESSAGE = "!SEND"
+LOGIN = "!LOGIN"
+REGISTER = "!REGISTER"
+PURPOSE = "!PURPOSE:"
+RECIPIENT = "!RECIPIENT:"
+SENDER = "!SENDER:"
+LENGTH = "!LENGTH:"
+BODY = "!BODY:"
+SEPARATOR = "/"
 
 class ChatClient:
     def __init__(self):
@@ -33,49 +41,45 @@ class ChatClient:
             self.send_chat_message()
             self.receive_messages()
 
-    
-    def login(self):
-        # Prints prompt from server
-        prompt = self.wait_for_response()
-        print(prompt)
-
-        # Sends user action to server
-        action = input()
-        self.send(action)
-
-        # Username prompt or "invalid input" message
-        action_response = self.wait_for_response()
-        print(action_response)
-        if action_response == "Invalid input.":
-            return
-
-        # Gets username from user and sends it to server
-        username = input()
-        self.send(username)
-
-        # Gets response from server (either success or error message)
-        response = self.wait_for_response()
-
-        # Checks if the login was successful and stores information if so
+    def enter_user(self, purpose):
+        # Prompts user for username
+        username = input("What's your username?")
+        if purpose == "0":
+            msg = self.create_message(purpose=REGISTER, body=username)
+        elif purpose == "1":
+            msg = self.create_message(purpose=LOGIN, body=username)
+        self.send(msg)
+        response = self.receive()
         if response == LOGIN_SUCCESS:
             self.logged_in = True
             self.username = username
+            return username, True
         else:
-            print(response)
+            return username, False
 
+    def login(self):
+        logged_in = False
+        while not logged_in:
+            action = input("Enter 0 to register. Enter 1 to login.")
+            if action == "0":
+                username, logged_in = self.enter_user(action)
+            elif action == "1":
+                username, logged_in = self.enter_user(action)
+            else:
+                self.send("Invalid input.")
 
     def send_chat_message(self):
         self.send(SEND_MESSAGE)
         # TODO: literally zero error handling
         self.send(self.username)
 
-        prompt = self.wait_for_response()
+        prompt = self.receive()
         print(prompt)
 
         recipient = input()
         self.send(recipient)
 
-        prompt = self.wait_for_response()
+        prompt = self.receive()
         print(prompt)
 
         message = input()
@@ -83,35 +87,53 @@ class ChatClient:
 
         print("Message sent!")
     
+    def create_message(self, purpose, body, recipient=None, sender=None):
+        data=PURPOSE + purpose
+        if recipient and sender:
+            data += SEPARATOR + RECIPIENT + recipient
+            data += SEPARATOR + SENDER + sender
+        if body:
+            length = len(body)
+            data+= SEPARATOR + LENGTH + length
+            data+= SEPARATOR + BODY + body
+        return data
+
+    def decode_message(self, msg):
+        return
+
 
     def receive_messages(self):
-        self.send(PULL_MESSAGE)
-        response = self.wait_for_response()
+        msg = self.create_message(PULL_MESSAGE, "")
+        self.send(msg)
+        response = self.receive()
         while response != NO_MORE_DATA:
             print(response)
-            response = self.wait_for_response()
+            response = self.receive()
         
         print("No more messages.")
+
 
     def disconnect(self):
         pass
 
 
     def send(self, msg):
-        message = msg.encode(FORMAT)
-        msg_length = len(message)
-        send_length = str(msg_length).encode(FORMAT)
-        send_length += b' ' * (HEADER - len(send_length))
-        self.client.send(send_length)
-        self.client.send(message)
+        # message = msg.encode(FORMAT)
+        # msg_length = len(message)
+        # send_length = str(msg_length).encode(FORMAT)
+        # send_length += b' ' * (HEADER - len(send_length))
+        # self.client.send(send_length)
+        try:
+            self.client.send(msg.encode(FORMAT))
+        except:
+            raise ValueError
 
     
-    def wait_for_response(self):
-        msg_length = self.client.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            response = self.client.recv(msg_length).decode(FORMAT)
-            return response
+    def receive(self):
+        try:
+            return self.client.recv(HEADER).decode(FORMAT)
+        except:
+            raise ValueError
 
 chat_client = ChatClient()
 
