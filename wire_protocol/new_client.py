@@ -45,10 +45,12 @@ class ChatClient:
         # Prompts user for username
         username = input("What's your username?")
         if purpose == "0":
-            msg = self.create_message(purpose=REGISTER, body=username)
+            self.send(purpose=REGISTER,body=username)
+            # msg = self.create_message(purpose=REGISTER, body=username)
         elif purpose == "1":
-            msg = self.create_message(purpose=LOGIN, body=username)
-        self.send(msg)
+            self.send(purpose=LOGIN,body=username)
+            # msg = self.create_message(purpose=LOGIN, body=username)
+        
         response = self.receive()
         if response == LOGIN_SUCCESS:
             self.logged_in = True
@@ -65,49 +67,18 @@ class ChatClient:
                 username, logged_in = self.enter_user(action)
             elif action == "1":
                 username, logged_in = self.enter_user(action)
-            else:
-                self.send("Invalid input.")
-
+            
     def send_chat_message(self):
-        self.send(SEND_MESSAGE)
-        # TODO: literally zero error handling
-        self.send(self.username)
-
-        prompt = self.receive()
-        print(prompt)
-
-        recipient = input()
-        self.send(recipient)
-
-        prompt = self.receive()
-        print(prompt)
-
-        message = input()
-        self.send(message)
-
-        print("Message sent!")
+        recipient = input("Who do you want to send a message to?")
+        message = input("What's your message?")
+        self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
+        print(self.receive())
     
-    def create_message(self, purpose, body, recipient=None, sender=None):
-        data=PURPOSE + purpose
-        if recipient and sender:
-            data += SEPARATOR + RECIPIENT + recipient
-            data += SEPARATOR + SENDER + sender
-        if body:
-            length = len(body)
-            data+= SEPARATOR + LENGTH + length
-            data+= SEPARATOR + BODY + body
-        return data
-
-    def decode_message(self, msg):
-        return
-
-
     def receive_messages(self):
-        msg = self.create_message(PULL_MESSAGE, "")
-        self.send(msg)
+        self.send(purpose=PULL_MESSAGE, body="")
         response = self.receive()
-        while response != NO_MORE_DATA:
-            print(response)
+        while response[BODY] != NO_MORE_DATA:
+            print(response[BODY])
             response = self.receive()
         
         print("No more messages.")
@@ -117,23 +88,42 @@ class ChatClient:
         pass
 
 
-    def send(self, msg):
-        # message = msg.encode(FORMAT)
-        # msg_length = len(message)
-        # send_length = str(msg_length).encode(FORMAT)
-        # send_length += b' ' * (HEADER - len(send_length))
-        # self.client.send(send_length)
+    def send(self,purpose, body, recipient=None, sender=None):
+        data=PURPOSE + purpose
+        if recipient and sender:
+            data += SEPARATOR + RECIPIENT + recipient
+            data += SEPARATOR + SENDER + sender
+        if body:
+            length = len(body)
+            data+= SEPARATOR + LENGTH + length
+            data+= SEPARATOR + BODY + body
+    
         try:
-            self.client.send(msg.encode(FORMAT))
+            self.client.send(data.encode(FORMAT))
         except:
             raise ValueError
 
     
     def receive(self):
         try:
-            return self.client.recv(HEADER).decode(FORMAT)
+            full_message = self.client.recv(HEADER).decode(FORMAT)
+            split_message = full_message.split("/")
+            parsed_message = {}
+            for i in range(len(split_message)):
+                part = split_message[i]
+                if part != BODY:
+                    parsed_message[part] = split_message[i+1]
+                    i += 1
+                else:
+                    body = split_message[i+1:].join("/")
+                    length = int(parsed_message[LENGTH])
+                    parsed_message[part] = body[:length]
+                    break
+            return parsed_message
         except:
             raise ValueError
+
+
 
 chat_client = ChatClient()
 
