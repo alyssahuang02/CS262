@@ -19,6 +19,18 @@ SENDER = "!SENDER:"
 LENGTH = "!LENGTH:"
 BODY = "!BODY:"
 SEPARATOR = "/"
+NOTIFY = "!NOTIFY"
+
+MAX_BANDWIDTH = 2048 # TODO: WE HAVE TO CHECK STUFF DOES NOT EXCEED THIS
+
+CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
+DELETE_ACCOUNT = "!DELETEACCOUNT"
+
+# Printable messages from NOTIFY
+LOGIN_SUCCESSFUL = "Login successful!"
+USER_DOES_NOT_EXIST = "User does not exist."
+DELETION_SUCCESSFUL = "Account deleted."
+LOGOUT_SUCCESSFUL = "Logout successful."
 
 class ChatClient:
     def __init__(self):
@@ -31,8 +43,6 @@ class ChatClient:
         while not self.logged_in:
             self.login()
         
-        print("Logged in!")
-        
         # Receive messages from when they were offline
         self.receive_messages()
         
@@ -40,10 +50,12 @@ class ChatClient:
             # TODO: check ordering
             self.send_chat_message()
             self.receive_messages()
+            # TODO: idk where to put this move later lol
+            self.delete_account()
 
     def enter_user(self, purpose):
         # Prompts user for username
-        username = input("What's your username?")
+        username = input("What's your username?\n")
         if purpose == "0":
             self.send(purpose=REGISTER,body=username)
             # msg = self.create_message(purpose=REGISTER, body=username)
@@ -52,76 +64,105 @@ class ChatClient:
             # msg = self.create_message(purpose=LOGIN, body=username)
         
         response = self.receive()
-        if response == LOGIN_SUCCESS:
+        if response[PURPOSE] == NOTIFY and response[BODY] == LOGIN_SUCCESSFUL:
             self.logged_in = True
             self.username = username
             return username, True
-        else:
-            return username, False
+        
+        return username, False
 
     def login(self):
         logged_in = False
         while not logged_in:
-            action = input("Enter 0 to register. Enter 1 to login.")
+            action = input("Enter 0 to register. Enter 1 to login.\n")
             if action == "0":
                 username, logged_in = self.enter_user(action)
             elif action == "1":
                 username, logged_in = self.enter_user(action)
             
+    
     def send_chat_message(self):
-        recipient = input("Who do you want to send a message to?")
-        message = input("What's your message?")
+        recipient = input("Who do you want to send a message to?\n")
+        self.send(purpose=CHECK_USER_EXISTS, body=recipient)
+        response = self.receive()
+
+        if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
+            return
+        
+        message = input("What's your message?\n")
         self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
         print(self.receive())
     
     def receive_messages(self):
         self.send(purpose=PULL_MESSAGE, body="")
         response = self.receive()
-        while response[BODY] != NO_MORE_DATA:
-            print(response[BODY])
+        while response[PURPOSE] != NO_MORE_DATA:
             response = self.receive()
         
         print("No more messages.")
+    
+
+    def delete_account(self):
+        action = input("Enter 0 to delete your account.\n")
+        if action == "0":
+            self.send(purpose=DELETE_ACCOUNT, body=self.username)
+            response = self.receive()
+            if response[PURPOSE] == NOTIFY and response[BODY] == DELETION_SUCCESSFUL:
+                self.logged_in = False
+                self.username = None
+                self.login()
 
 
     def disconnect(self):
         pass
 
-
-    def send(self,purpose, body, recipient=None, sender=None):
-        data=PURPOSE + purpose
+    
+    def create_message(self, purpose, body, recipient=None, sender=None):
+        data=PURPOSE + SEPARATOR + purpose
         if recipient and sender:
-            data += SEPARATOR + RECIPIENT + recipient
-            data += SEPARATOR + SENDER + sender
+            data += SEPARATOR + RECIPIENT + SEPARATOR + recipient
+            data += SEPARATOR + SENDER + SEPARATOR + sender
         if body:
             length = len(body)
-            data+= SEPARATOR + LENGTH + length
-            data+= SEPARATOR + BODY + body
-    
+            data += SEPARATOR + LENGTH + SEPARATOR + str(length)
+            data += SEPARATOR + BODY + SEPARATOR + body
+        
+        return data
+
+
+    def send(self,purpose, body, recipient=None, sender=None):
+        msg = self.create_message(purpose, body, recipient, sender)
         try:
-            self.client.send(data.encode(FORMAT))
+            self.client.send(msg.encode(FORMAT))
         except:
             raise ValueError
 
     
     def receive(self):
         try:
-            full_message = self.client.recv(HEADER).decode(FORMAT)
-            split_message = full_message.split("/")
-            parsed_message = {}
-            for i in range(len(split_message)):
-                part = split_message[i]
-                if part != BODY:
-                    parsed_message[part] = split_message[i+1]
-                    i += 1
-                else:
-                    body = split_message[i+1:].join("/")
-                    length = int(parsed_message[LENGTH])
-                    parsed_message[part] = body[:length]
-                    break
-            return parsed_message
+            full_message = self.client.recv(MAX_BANDWIDTH).decode(FORMAT)
         except:
             raise ValueError
+        split_message = full_message.split("/")
+        parsed_message = {}
+        i = 0
+        while i < len(split_message):
+            part = split_message[i]
+            if BODY != part:
+                parsed_message[part] = split_message[i+1]
+                i += 1
+            else:
+                body = "/".join(split_message[i+1:])
+                length = int(parsed_message[LENGTH])
+                parsed_message[part] = body[:length]
+                break
+            i += 1
+        
+        if parsed_message[PURPOSE] == NOTIFY:
+            body = parsed_message[BODY]
+            print(body)
+        return parsed_message
+        
 
 
 

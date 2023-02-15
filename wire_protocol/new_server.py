@@ -21,10 +21,20 @@ BODY = "!BODY:"
 SEPARATOR = "/"
 MAX_BANDWIDTH = 2048
 
+# Client purposes
+CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
+DELETE_ACCOUNT = "!DELETEACCOUNT"
+
 # Server stuff
 NOTIFY = "!NOTIFY" # you have to always print out the body if purpose is notify
 # server already preprocesses the message to be received
 NO_MORE_DATA = "!NOMOREDATA"
+
+# Printable messages from NOTIFY
+LOGIN_SUCCESSFUL = "Login successful!"
+USER_DOES_NOT_EXIST = "User does not exist."
+DELETION_SUCCESSFUL = "Account deleted."
+LOGOUT_SUCCESSFUL = "Logout successful."
 
 class ChatServer:
     def __init__(self):
@@ -36,32 +46,28 @@ class ChatServer:
         self.accounts = [] # [username1, username2, username3]
         self.active_accounts = {} # {username: addr}
 
-    def login_user(self, conn, addr):
+    def login_user(self, conn, username, addr):
         logged_in = False
-        # self.send("What's your username?", conn)
-        username = self.receive(conn)
         
         print(f"[{addr}] {username}")
 
         if username not in self.accounts:
-            self.send("Username does not exist.", conn)
+            self.send(conn, NOTIFY, "Username does not exist.")
         else:
             # Log in user
             self.active_accounts[username] = addr
             logged_in = True
         
-        self.send(NOTIFY, "Login successful!")
+        self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
 
-    def register_user(self, conn, addr):
+    def register_user(self, conn, username, addr):
         registered = False
-        self.send("What's your username?", conn)
-        username = self.receive(conn)
         
         print(f"[{addr}] {username}")
 
         if username in self.accounts:
-            self.send("Username already exists.", conn)
+            self.send(conn, NOTIFY, "Username already exists.")
         else:
             # Register and log in user
             self.active_accounts[username] = addr
@@ -69,28 +75,13 @@ class ChatServer:
             self.unsent_messages[username] = []
             registered = True
         
-        self.send(NOTIFY, "Login successful!")
+        self.send(conn, NOTIFY, "Login successful!")
         return (username, registered)
 
-    def record_chat_message(self, conn, addr):
-        # Block until we get the sender's username
-        sender = self.receive(conn)
-
-        # TODO: we should lowkey wrap this in a function LOL
-        self.send("Who do you want to send a message to?", conn)
-        recipient = self.receive(conn)
-
-        if recipient not in self.accounts:
-            self.send("User does not exist.", conn)
-            # TODO: handle error better lolz
-            return
-        
-        self.send("What's your message?", conn)
-        msg = self.receive(conn)
-
+    # Precondition: recipient is in list of accounts
+    def record_chat_message(self, conn, sender, recipient, msg):
         self.unsent_messages[recipient].append((sender, msg))
-
-        self.send(NOTIFY, "Message sent!")
+        self.send(conn, NOTIFY, "Message sent!")
     
 
     # Sends all unsent messages to the user who is currently connected at given address
@@ -103,12 +94,28 @@ class ChatServer:
                 if recipient_addr == addr:
                     for message in messages:
                         text = message[0] + " sends: " + message[1]
-                        self.send(SEND_MESSAGE, text)
+                        self.send(conn, NOTIFY, text)
                     
             # TODO: do this in a thread-safe way lmao
             # TODO: Need to modify this to delete stuff
-            # self.unsent_messages[recipient] = []
-        self.send(NO_MORE_DATA, "")
+            self.unsent_messages[recipient] = []
+        self.send(conn, NO_MORE_DATA, " ")
+
+    # Precondition: we have already checked that the username corresponds to
+    # the user who was logged in at the time
+    def delete_account(self, conn, username):
+        del self.active_accounts[username]
+        del self.unsent_messages[username]
+        self.accounts.remove(username)
+        self.send(conn, NOTIFY, DELETION_SUCCESSFUL)
+    
+
+    # Precondition: we have already checked that the username corresponds to
+    # the user who was logged in at the time
+    def logout(self, conn, username):
+        del self.active_accounts[username]
+        self.send(conn, NOTIFY, LOGOUT_SUCCESSFUL)
+    
 
     def handle_client(self, conn, addr):
         print(f"[NEW CONNECTION] {addr} connected.")
@@ -118,33 +125,48 @@ class ChatServer:
         while True:
             parsed_message = self.receive(conn)
 
+            print(parsed_message)
             purpose = parsed_message[PURPOSE]
             if purpose == LOGIN:
-                username, logged_in = self.login_user(conn, addr)
+                username = parsed_message[BODY]
+                username, logged_in = self.login_user(conn, username, addr)
             elif purpose == REGISTER:
-                username, logged_in = self.register_user(conn, addr)
+                username = parsed_message[BODY]
+                username, logged_in = self.register_user(conn, username, addr)
             elif purpose == SEND_MESSAGE:
                 if not logged_in:
-                    self.send(NOTIFY, "You must be logged in to send a message.")
+                    self.send(conn, NOTIFY, "You must be logged in to send a message.")
                     continue
-                self.record_chat_message(conn, addr)
+                sender = parsed_message[SENDER]
+                recipient = parsed_message[RECIPIENT]
+                msg = parsed_message[BODY]
+                self.record_chat_message(conn, sender, recipient, msg)
             elif purpose == PULL_MESSAGE:
                 if not logged_in:
-                    self.send(NOTIFY, "You must be logged in to receive messages.")
+                    self.send(conn, NOTIFY, "You must be logged in to receive messages.")
                     continue
+
                 self.send_unsent_messages(conn, addr)
+            elif purpose == CHECK_USER_EXISTS:
+                username = parsed_message[BODY]
+                if username in self.accounts:
+                    self.send(conn, NOTIFY, "User exists.")
+                else:
+                    self.send(conn, NOTIFY, USER_DOES_NOT_EXIST)
+            
+            elif purpose == DELETE_ACCOUNT:
+                if not logged_in:
+                    self.send(conn, NOTIFY, "You must be logged in to delete an account.")
+                    continue
+                username = parsed_message[BODY]
 
-
-        # TODO: we have to make this a background process somehow later??
-        
-
-        # TODO: add here i forgot the specs
-        # conn.send("Enter 0 to send a message. Enter 1 to delete account.".encode(FORMAT))
-
-        # msg_length = conn.recv(HEADER).decode(FORMAT)
-        # if msg_length:
-        #     msg_length = int(msg_length)
-        #     action = conn.recv(msg_length).decode(FORMAT)
+                # Checks that the user currently logged in is the one who is trying to delete their account
+                for user in self.active_accounts:
+                    if user == username and self.active_accounts[user] == addr:
+                        self.delete_account(conn, username)
+                        continue
+                self.send(conn, NOTIFY, "You cannot another user's account.")
+                continue
         
         
         
@@ -164,21 +186,23 @@ class ChatServer:
 
 
     def create_message(self, purpose, body, recipient=None, sender=None):
-        data=PURPOSE + purpose
+        data=PURPOSE + SEPARATOR + purpose
         if recipient and sender:
-            data += SEPARATOR + RECIPIENT + recipient
-            data += SEPARATOR + SENDER + sender
+            data += SEPARATOR + RECIPIENT + SEPARATOR + recipient
+            data += SEPARATOR + SENDER + SEPARATOR + sender
         if body:
             length = len(body)
-            data+= SEPARATOR + LENGTH + length
-            data+= SEPARATOR + BODY + body
+            data += SEPARATOR + LENGTH + SEPARATOR + str(length)
+            data += SEPARATOR + BODY + SEPARATOR + body
+        
         return data
     
     
-    def send(self, purpose, body, recipient=None, sender=None):
+    def send(self, conn, purpose, body, recipient=None, sender=None):
         msg = self.create_message(purpose, body, recipient, sender)
+        print(msg)
         try:
-            self.client.send(msg.encode(FORMAT))
+            conn.send(msg.encode(FORMAT))
         except:
             raise ValueError
 
@@ -191,16 +215,18 @@ class ChatServer:
             raise ValueError
         split_message = full_message.split("/")
         parsed_message = {}
-        for i in range(len(split_message)):
+        i = 0
+        while i < len(split_message):
             part = split_message[i]
-            if part != BODY:
+            if BODY != part:
                 parsed_message[part] = split_message[i+1]
                 i += 1
             else:
-                body = split_message[i+1:].join("/")
+                body = "/".join(split_message[i+1:])
                 length = int(parsed_message[LENGTH])
                 parsed_message[part] = body[:length]
                 break
+            i += 1
         return parsed_message
 
         
