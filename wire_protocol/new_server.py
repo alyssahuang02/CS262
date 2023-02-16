@@ -1,6 +1,7 @@
 import socket 
 import threading
 import pickle
+import re
 
 # bytes for the metadata of how long the message is, then cater the actual size
 HEADER = 64
@@ -24,6 +25,7 @@ MAX_BANDWIDTH = 2048
 # Client purposes
 CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
 DELETE_ACCOUNT = "!DELETEACCOUNT"
+SHOW_ACCOUNTS = "!SHOWACCOUNTS"
 
 # Server stuff
 NOTIFY = "!NOTIFY" # you have to always print out the body if purpose is notify
@@ -35,6 +37,8 @@ LOGIN_SUCCESSFUL = "Login successful!"
 USER_DOES_NOT_EXIST = "User does not exist."
 DELETION_SUCCESSFUL = "Account deleted."
 LOGOUT_SUCCESSFUL = "Logout successful."
+
+mutex = threading.Lock()
 
 class ChatServer:
     def __init__(self):
@@ -55,7 +59,9 @@ class ChatServer:
             self.send(conn, NOTIFY, "Username does not exist.")
         else:
             # Log in user
+            mutex.acquire()
             self.active_accounts[username] = addr
+            mutex.release()
             logged_in = True
         
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
@@ -66,13 +72,16 @@ class ChatServer:
         
         print(f"[{addr}] {username}")
 
+        # DO WE NEED A MUTEX HERE???
         if username in self.accounts:
             self.send(conn, NOTIFY, "Username already exists.")
         else:
             # Register and log in user
+            mutex.acquire()
             self.active_accounts[username] = addr
             self.accounts.append(username)
             self.unsent_messages[username] = []
+            mutex.release()
             registered = True
         
         self.send(conn, NOTIFY, "Login successful!")
@@ -80,12 +89,15 @@ class ChatServer:
 
     # Precondition: recipient is in list of accounts
     def record_chat_message(self, conn, sender, recipient, msg):
+        mutex.acquire()
         self.unsent_messages[recipient].append((sender, msg))
+        mutex.release()
         self.send(conn, NOTIFY, "Message sent!")
     
 
     # Sends all unsent messages to the user who is currently connected at given address
     def send_unsent_messages(self, conn, addr):
+        mutex.acquire()
         for recipient in self.unsent_messages:
             messages = self.unsent_messages[recipient]
 
@@ -98,22 +110,28 @@ class ChatServer:
                     
             # TODO: do this in a thread-safe way lmao
             # TODO: Need to modify this to delete stuff
+            # WHAT IF THE RECIPIENT DISCONNECTS?
             self.unsent_messages[recipient] = []
+        mutex.release()
         self.send(conn, NO_MORE_DATA, " ")
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def delete_account(self, conn, username):
+        mutex.acquire()
         del self.active_accounts[username]
         del self.unsent_messages[username]
         self.accounts.remove(username)
+        mutex.release()
         self.send(conn, NOTIFY, DELETION_SUCCESSFUL)
     
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def logout(self, conn, username):
+        mutex.acquire()
         del self.active_accounts[username]
+        mutex.release()
         self.send(conn, NOTIFY, LOGOUT_SUCCESSFUL)
     
 
@@ -167,6 +185,24 @@ class ChatServer:
                         continue
                 self.send(conn, NOTIFY, "You cannot another user's account.")
                 continue
+            
+            elif purpose == SHOW_ACCOUNTS:
+                username = parsed_message[BODY]
+                matched_accounts = []
+            
+                mutex.acquire()
+                for account in self.accounts:
+                    x = re.search(username, account)
+                    if x is not None:
+                        matched_accounts.append(account)
+                mutex.release()
+                if len(matched_accounts) == 0:
+                    self.send(conn, NOTIFY, USER_DOES_NOT_EXIST)
+                else:
+                    # might throw an error with lists
+                    self.send(conn, NOTIFY, matched_accounts)
+
+
         
         
         

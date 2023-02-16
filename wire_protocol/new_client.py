@@ -25,6 +25,7 @@ MAX_BANDWIDTH = 2048 # TODO: WE HAVE TO CHECK STUFF DOES NOT EXCEED THIS
 
 CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
 DELETE_ACCOUNT = "!DELETEACCOUNT"
+SHOW_ACCOUNTS = "!SHOWACCOUNTS"
 
 # Printable messages from NOTIFY
 LOGIN_SUCCESSFUL = "Login successful!"
@@ -48,10 +49,25 @@ class ChatClient:
         
         while self.logged_in:
             # TODO: check ordering
+            self.show_users()
             self.send_chat_message()
             self.receive_messages()
             # TODO: idk where to put this move later lol
             self.delete_account()
+    
+    def show_users(self):
+        found_user = False
+        while not found_user:
+            recipient = input("What users would you like to see?\n")
+            self.send(purpose=SHOW_ACCOUNTS, body=recipient)
+            response = self.receive()
+
+            if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
+                print("No user matches that pattern. Try again.")
+            else:
+                print(response[BODY])
+                found_user = True
+        
 
     def enter_user(self, purpose):
         # Prompts user for username
