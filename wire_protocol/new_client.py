@@ -82,8 +82,9 @@ class ChatClient:
         
         message = input("What's your message?\n")
         self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
+        response = self.receive()
     
-    
+
     def receive_messages(self):
         self.send(purpose=PULL_MESSAGE, body="")
         response = self.receive()

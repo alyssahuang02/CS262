@@ -3,7 +3,9 @@ import threading
 import re
 from commands import *
 
-mutex = threading.Lock() # TODO: THIS STUFF
+mutex_unsent_messages = threading.Lock()
+mutex_accounts = threading.Lock()
+mutex_active_accounts = threading.Lock()
 
 class ChatServer:
     def __init__(self):
@@ -24,9 +26,9 @@ class ChatServer:
             self.send(conn, NOTIFY, "Username does not exist.")
         else:
             # Log in user
-            mutex.acquire()
+            mutex_active_accounts.acquire()
             self.active_accounts[username] = addr
-            mutex.release()
+            mutex_active_accounts.release()
             logged_in = True
         
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
@@ -42,61 +44,79 @@ class ChatServer:
             self.send(conn, NOTIFY, "Username already exists.")
         else:
             # Register and log in user
-            mutex.acquire()
+
+            # TODO: check if these mutices are in correct order
+            mutex_active_accounts.acquire()
             self.active_accounts[username] = addr
+            mutex_active_accounts.release()
+
+            mutex_accounts.acquire()
             self.accounts.append(username)
+            mutex_accounts.release()
+
+            mutex_unsent_messages.acquire()
             self.unsent_messages[username] = []
-            mutex.release()
+            mutex_unsent_messages.release()
+            self.send(conn, NOTIFY, "Login successful!")
+
             registered = True
         
-        self.send(conn, NOTIFY, "Login successful!")
         return (username, registered)
 
     # Precondition: recipient is in list of accounts
     def record_chat_message(self, conn, sender, recipient, msg):
-        mutex.acquire()
+        mutex_unsent_messages.acquire()
         self.unsent_messages[recipient].append((sender, msg))
-        mutex.release()
+        mutex_unsent_messages.release()
         self.send(conn, NOTIFY, "Message sent!")
     
 
     # Sends all unsent messages to the user who is currently connected at given address
     def send_unsent_messages(self, conn, addr):
-        mutex.acquire()
         for recipient in self.unsent_messages:
             messages = self.unsent_messages[recipient]
 
             if recipient in self.active_accounts:
                 recipient_addr = self.active_accounts[recipient]
                 if recipient_addr == addr:
+                    print("waiting for mutex")
+                    mutex_unsent_messages.acquire()
+                    print("got mutex")
                     for message in messages:
                         text = message[0] + " sends: " + message[1]
                         self.send(conn, NOTIFY, text)
-                    
-            # TODO: do this in a thread-safe way lmao
-            # TODO: Need to modify this to delete stuff
-            # WHAT IF THE RECIPIENT DISCONNECTS?
-            self.unsent_messages[recipient] = []
-        mutex.release()
-        self.send(conn, NO_MORE_DATA, " ")
+                    self.unsent_messages[recipient] = []
+                    print("mutex released")
+                    mutex_unsent_messages.release()
+
+                    # Assumes user is only logged into one terminal
+                    self.send(conn, NO_MORE_DATA, " ")
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def delete_account(self, conn, username):
-        mutex.acquire()
+        mutex_active_accounts.acquire()
         del self.active_accounts[username]
+        mutex_active_accounts.release()
+
+        mutex_unsent_messages.acquire()
         del self.unsent_messages[username]
+        mutex_unsent_messages.release()
+
+        mutex_accounts.acquire()
         self.accounts.remove(username)
-        mutex.release()
+        mutex_accounts.release()
+
         self.send(conn, NOTIFY, DELETION_SUCCESSFUL)
     
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def logout(self, conn, username):
-        mutex.acquire()
+        mutex_active_accounts.acquire().acquire()
         del self.active_accounts[username]
-        mutex.release()
+        mutex_active_accounts.acquire().release()
+
         self.send(conn, NOTIFY, LOGOUT_SUCCESSFUL)
     
 
@@ -155,12 +175,12 @@ class ChatServer:
                 username = parsed_message[BODY]
                 matched_accounts = []
             
-                mutex.acquire()
                 for account in self.accounts:
                     x = re.search(username, account)
                     if x is not None:
+                        mutex_accounts.acquire()
                         matched_accounts.append(account)
-                mutex.release()
+                        mutex_accounts.release()
                 if len(matched_accounts) == 0:
                     self.send(conn, NOTIFY, USER_DOES_NOT_EXIST)
                 else:
