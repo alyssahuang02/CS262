@@ -5,7 +5,7 @@ import grpc
 import new_route_guide_pb2 as new__route__guide__pb2
 
 
-class RouteGuideStub(object):
+class ChatStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,74 +14,138 @@ class RouteGuideStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.ListAccounts = channel.unary_stream(
-                '/routeguide.RouteGuide/ListAccounts',
+        self.login_user = channel.unary_unary(
+                '/routeguide.Chat/login_user',
                 request_serializer=new__route__guide__pb2.Text.SerializeToString,
                 response_deserializer=new__route__guide__pb2.Text.FromString,
                 )
-        self.ReceiveMessages = channel.unary_stream(
-                '/routeguide.RouteGuide/ReceiveMessages',
+        self.register_user = channel.unary_unary(
+                '/routeguide.Chat/register_user',
+                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
+                )
+        self.record_chat_message = channel.stream_unary(
+                '/routeguide.Chat/record_chat_message',
+                request_serializer=new__route__guide__pb2.Note.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
+                )
+        self.send_unsent_messages = channel.unary_stream(
+                '/routeguide.Chat/send_unsent_messages',
                 request_serializer=new__route__guide__pb2.Text.SerializeToString,
                 response_deserializer=new__route__guide__pb2.Note.FromString,
                 )
-        self.SendMessage = channel.stream_stream(
-                '/routeguide.RouteGuide/SendMessage',
-                request_serializer=new__route__guide__pb2.Note.SerializeToString,
-                response_deserializer=new__route__guide__pb2.Note.FromString,
+        self.delete_account = channel.unary_unary(
+                '/routeguide.Chat/delete_account',
+                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
+                )
+        self.logout = channel.unary_unary(
+                '/routeguide.Chat/logout',
+                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
+                )
+        self.handle_client = channel.unary_unary(
+                '/routeguide.Chat/handle_client',
+                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
                 )
 
 
-class RouteGuideServicer(object):
+class ChatServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def ListAccounts(self, request, context):
+    def login_user(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def ReceiveMessages(self, request, context):
+    def register_user(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def SendMessage(self, request_iterator, context):
+    def record_chat_message(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def send_unsent_messages(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def delete_account(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def logout(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def handle_client(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_RouteGuideServicer_to_server(servicer, server):
+def add_ChatServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'ListAccounts': grpc.unary_stream_rpc_method_handler(
-                    servicer.ListAccounts,
+            'login_user': grpc.unary_unary_rpc_method_handler(
+                    servicer.login_user,
                     request_deserializer=new__route__guide__pb2.Text.FromString,
                     response_serializer=new__route__guide__pb2.Text.SerializeToString,
             ),
-            'ReceiveMessages': grpc.unary_stream_rpc_method_handler(
-                    servicer.ReceiveMessages,
+            'register_user': grpc.unary_unary_rpc_method_handler(
+                    servicer.register_user,
+                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
+            ),
+            'record_chat_message': grpc.stream_unary_rpc_method_handler(
+                    servicer.record_chat_message,
+                    request_deserializer=new__route__guide__pb2.Note.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
+            ),
+            'send_unsent_messages': grpc.unary_stream_rpc_method_handler(
+                    servicer.send_unsent_messages,
                     request_deserializer=new__route__guide__pb2.Text.FromString,
                     response_serializer=new__route__guide__pb2.Note.SerializeToString,
             ),
-            'SendMessage': grpc.stream_stream_rpc_method_handler(
-                    servicer.SendMessage,
-                    request_deserializer=new__route__guide__pb2.Note.FromString,
-                    response_serializer=new__route__guide__pb2.Note.SerializeToString,
+            'delete_account': grpc.unary_unary_rpc_method_handler(
+                    servicer.delete_account,
+                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
+            ),
+            'logout': grpc.unary_unary_rpc_method_handler(
+                    servicer.logout,
+                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
+            ),
+            'handle_client': grpc.unary_unary_rpc_method_handler(
+                    servicer.handle_client,
+                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'routeguide.RouteGuide', rpc_method_handlers)
+            'routeguide.Chat', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class RouteGuide(object):
+class Chat(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def ListAccounts(request,
+    def login_user(request,
             target,
             options=(),
             channel_credentials=None,
@@ -91,14 +155,14 @@ class RouteGuide(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/routeguide.RouteGuide/ListAccounts',
+        return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/login_user',
             new__route__guide__pb2.Text.SerializeToString,
             new__route__guide__pb2.Text.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def ReceiveMessages(request,
+    def register_user(request,
             target,
             options=(),
             channel_credentials=None,
@@ -108,14 +172,48 @@ class RouteGuide(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/routeguide.RouteGuide/ReceiveMessages',
+        return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/register_user',
+            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def record_chat_message(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/routeguide.Chat/record_chat_message',
+            new__route__guide__pb2.Note.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def send_unsent_messages(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/routeguide.Chat/send_unsent_messages',
             new__route__guide__pb2.Text.SerializeToString,
             new__route__guide__pb2.Note.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def SendMessage(request_iterator,
+    def delete_account(request,
             target,
             options=(),
             channel_credentials=None,
@@ -125,8 +223,42 @@ class RouteGuide(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.stream_stream(request_iterator, target, '/routeguide.RouteGuide/SendMessage',
-            new__route__guide__pb2.Note.SerializeToString,
-            new__route__guide__pb2.Note.FromString,
+        return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/delete_account',
+            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def logout(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/logout',
+            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def handle_client(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/handle_client',
+            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
