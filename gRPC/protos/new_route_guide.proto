@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.routeguide";
+option java_outer_classname = "RouteGuideProto";
+option objc_class_prefix = "RTG";
+
+package routeguide;
+
+service RouteGuide {
+    rpc ListAccounts(Text) returns (stream Text) {}
+    rpc ReceiveMessages(Text) returns (stream Note) {}
+    rpc SendMessage(stream Note) returns (stream Note) {}
+}
+
+message Text {
+    string text = 1;
+}
+message Note {
+    string sender = 1;
+    string recipient = 2;
+    int64 length = 3;
+    string message = 4;
+}
+
