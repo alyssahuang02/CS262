@@ -61,6 +61,7 @@ class ChatServer:
 
             registered = True
         
+        self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, registered)
 
     # Precondition: recipient is in list of accounts
