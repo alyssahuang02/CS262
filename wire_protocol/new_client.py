@@ -24,7 +24,7 @@ class ChatClient:
         
         while self.logged_in:
             # TODO: check ordering
-            self.show_users()
+            # self.show_users()
             self.send_chat_message()
             self.receive_messages()
             # TODO: idk where to put this move later lol
@@ -82,7 +82,7 @@ class ChatClient:
         
         message = input("What's your message?\n")
         self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
-        print(self.receive())
+    
     
     def receive_messages(self):
         self.send(purpose=PULL_MESSAGE, body="")
@@ -129,11 +129,7 @@ class ChatClient:
             raise ValueError
 
     
-    def receive(self):
-        try:
-            full_message = self.client.recv(MAX_BANDWIDTH).decode(FORMAT)
-        except:
-            raise ValueError
+    def parse_message(self, full_message):
         split_message = full_message.split("/")
         parsed_message = {}
         i = 0
@@ -145,31 +141,23 @@ class ChatClient:
             else:
                 body = "/".join(split_message[i+1:])
                 length = int(parsed_message[LENGTH])
+                parsed_message[LENGTH] = length
                 parsed_message[part] = body[:length]
                 break
             i += 1
-        
+
         if parsed_message[PURPOSE] == NOTIFY:
             body = parsed_message[BODY]
             print(body)
         return parsed_message
+    
+
+    def receive(self):
+        try:
+            full_message = self.client.recv(MAX_BANDWIDTH).decode(FORMAT)
+        except:
+            raise ValueError
+        return self.parse_message(full_message)
         
 
-
-
 chat_client = ChatClient()
-
-# send a message - maybe commands of who to send a message to
-
-# print("continue")
-# # receive 
-# data = client.recv(2048)
-# data_arr = pickle.loads(data)
-
-# send("Hello World!")
-# input()
-# send("Hello Everyone!")
-# input()
-# send("Hello Tim!")
-
-# send(DISCONNECT_MESSAGE)
