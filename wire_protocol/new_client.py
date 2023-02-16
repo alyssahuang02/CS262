@@ -1,42 +1,17 @@
 import socket
-import pickle # we can't use this in our final implementation according to waldo
-
-HEADER = 64
-PORT = 5050
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
-ADDR = (SERVER, PORT)
-LOGIN_SUCCESS = "!LOGGEDIN"
-NO_MORE_DATA = "!NOMOREDATA"
-PULL_MESSAGE = "!PULL"
-SEND_MESSAGE = "!SEND"
-LOGIN = "!LOGIN"
-REGISTER = "!REGISTER"
-PURPOSE = "!PURPOSE:"
-RECIPIENT = "!RECIPIENT:"
-SENDER = "!SENDER:"
-LENGTH = "!LENGTH:"
-BODY = "!BODY:"
-SEPARATOR = "/"
-NOTIFY = "!NOTIFY"
-
-MAX_BANDWIDTH = 2048 # TODO: WE HAVE TO CHECK STUFF DOES NOT EXCEED THIS
-
-CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
-DELETE_ACCOUNT = "!DELETEACCOUNT"
-SHOW_ACCOUNTS = "!SHOWACCOUNTS"
-
-# Printable messages from NOTIFY
-LOGIN_SUCCESSFUL = "Login successful!"
-USER_DOES_NOT_EXIST = "User does not exist."
-DELETION_SUCCESSFUL = "Account deleted."
-LOGOUT_SUCCESSFUL = "Logout successful."
+from commands import *
 
 class ChatClient:
-    def __init__(self):
+    def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(ADDR)
+    
+    def __init__(self):
+        try:
+            self.connect()
+        except:
+            print("Could not connect to server.")
+            return
 
         self.logged_in = False
         self.username = None

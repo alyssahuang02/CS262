@@ -1,44 +1,9 @@
 import socket 
 import threading
-import pickle
 import re
+from commands import *
 
-# bytes for the metadata of how long the message is, then cater the actual size
-HEADER = 64
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname()) # TODO: WHAT IS THIS?
-ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
-PULL_MESSAGE = "!PULL"
-SEND_MESSAGE = "!SEND"
-LOGIN = "!LOGIN"
-REGISTER = "!REGISTER"
-PURPOSE = "!PURPOSE:"
-RECIPIENT = "!RECIPIENT:"
-SENDER = "!SENDER:"
-LENGTH = "!LENGTH:"
-BODY = "!BODY:"
-SEPARATOR = "/"
-MAX_BANDWIDTH = 2048
-
-# Client purposes
-CHECK_USER_EXISTS = "!CHECKUSEREXISTS"
-DELETE_ACCOUNT = "!DELETEACCOUNT"
-SHOW_ACCOUNTS = "!SHOWACCOUNTS"
-
-# Server stuff
-NOTIFY = "!NOTIFY" # you have to always print out the body if purpose is notify
-# server already preprocesses the message to be received
-NO_MORE_DATA = "!NOMOREDATA"
-
-# Printable messages from NOTIFY
-LOGIN_SUCCESSFUL = "Login successful!"
-USER_DOES_NOT_EXIST = "User does not exist."
-DELETION_SUCCESSFUL = "Account deleted."
-LOGOUT_SUCCESSFUL = "Logout successful."
-
-mutex = threading.Lock()
+mutex = threading.Lock() # TODO: THIS STUFF
 
 class ChatServer:
     def __init__(self):
