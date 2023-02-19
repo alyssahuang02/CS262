@@ -11,3 +11,4 @@
 - General disconnect handling
 - Change prompt for deletion - "Enter 0 to delete, enter anything else if not."
 - List accounts
+- Two people logging in to the same account from different laptops
