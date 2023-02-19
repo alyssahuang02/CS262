@@ -10,3 +10,4 @@
 - Disconnect login again as same person and it hangs(?)
 - General disconnect handling
 - Change prompt for deletion - "Enter 0 to delete, enter anything else if not."
+- List accounts
