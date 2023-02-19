@@ -1,4 +1,4 @@
-from grpc import server
+import grpc
 from grpc._server import _Server
 import new_route_guide_pb2
 import new_route_guide_pb2_grpc
@@ -114,7 +114,7 @@ class ServerRunner:
         self.ip = socket.gethostbyname(socket.gethostname()) if ip is None else ip
         self.port = PORT
 
-        self.server = server(futures.ThreadPoolExecutor(max_workers=10))
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         self.chat_servicer = ChatServicer()
 
     def start(self):

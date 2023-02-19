@@ -26,12 +26,13 @@ class ChatServer:
             self.send(conn, NOTIFY, "Username does not exist.")
         else:
             # Log in user
+            print("username trying to acquire mutex")
             mutex_active_accounts.acquire()
             self.active_accounts[username] = addr
             mutex_active_accounts.release()
             logged_in = True
         
-        self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
+        # self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
 
     def register_user(self, conn, username, addr):

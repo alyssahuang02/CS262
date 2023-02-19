@@ -1,6 +1,5 @@
-import grpc
 from commands import *
-import grpc
+import grpc as gr
 import new_route_guide_pb2 as chat
 import new_route_guide_pb2_grpc as grpc
 
@@ -9,9 +8,10 @@ class ChatClient:
         self.connection = None
         try:
             print(f"{SERVER}:{PORT}")
-            self.connection = grpc.ChatStub(grpc.insecure_channel(f"{SERVER}:{PORT}"))
+            self.connection = grpc.ChatStub(gr.insecure_channel(f"{SERVER}:{PORT}"))
             print(self.connection)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not connect to server.")
             return
 

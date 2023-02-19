@@ -20,8 +20,9 @@ class ChatClient:
             self.login()
         
         # Receive messages from when they were offline
+        print("first receive")
         self.receive_messages()
-        
+        print("after receive")
         while self.logged_in:
             # TODO: check ordering
             # self.show_users()
