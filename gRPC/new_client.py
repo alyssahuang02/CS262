@@ -10,6 +10,7 @@ class ChatClient:
         try:
             print(f"{SERVER}:{PORT}")
             self.connection = grpc.ChatStub(grpc.insecure_channel(f"{SERVER}:{PORT}"))
+            print(self.connection)
         except:
             print("Could not connect to server.")
             return

@@ -120,10 +120,9 @@ class ServerRunner:
     def start(self):
         """Function for starting server."""
         new_route_guide_pb2_grpc.add_ChatServicer_to_server(self.chat_servicer, self.server)
-        print(self.ip, self.port)
-        self.server.add_insecure_port("[::]:5050")
-        
-        # self.server.add_insecure_port(f"{self.ip}:{self.port}")
+        print("ip and port", self.ip, self.port)
+        # self.server.add_insecure_port("[::]:5050")
+        self.server.add_insecure_port(f"{self.ip}:{self.port}")
         self.server.start()
         self.server.wait_for_termination()
 
