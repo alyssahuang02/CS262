@@ -60,7 +60,7 @@ class ChatServer:
             self.send(conn, NOTIFY, "Login successful!")
 
             registered = True
-        
+        #### Why are we notifying login_successful outside of the if?
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, registered)
 
