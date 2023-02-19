@@ -1,6 +1,6 @@
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
+from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -21,3 +21,11 @@ class Text(_message.Message):
     TEXT_FIELD_NUMBER: _ClassVar[int]
     text: str
     def __init__(self, text: _Optional[str] = ...) -> None: ...
+
+class Wrapper(_message.Message):
+    __slots__ = ["note", "text"]
+    NOTE_FIELD_NUMBER: _ClassVar[int]
+    TEXT_FIELD_NUMBER: _ClassVar[int]
+    note: Note
+    text: Text
+    def __init__(self, note: _Optional[_Union[Note, _Mapping]] = ..., text: _Optional[_Union[Text, _Mapping]] = ...) -> None: ...

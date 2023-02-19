@@ -14,7 +14,7 @@ service Chat {
     rpc send_unsent_messages(Text) returns (stream Note) {}
     rpc delete_account(Text) returns (Text) {}
     rpc logout(Text) returns (Text) {}
-    rpc handle_client(Text) returns (Text) {}
+    rpc handle_client(Wrapper) returns (Text) {}
     // rpc ListAccounts(Text) returns (stream Text) {}
     // rpc ReceiveMessages(Text) returns (stream Note) {}
     // rpc SendMessage(stream Note) returns (stream Note) {}
@@ -28,5 +28,10 @@ message Note {
     string recipient = 2;
     int64 length = 3;
     string message = 4;
+}
+
+message Wrapper {
+    Note note = 1;
+    Text text = 2;
 }
 

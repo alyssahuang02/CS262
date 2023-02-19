@@ -46,7 +46,7 @@ class ChatStub(object):
                 )
         self.handle_client = channel.unary_unary(
                 '/routeguide.Chat/handle_client',
-                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                request_serializer=new__route__guide__pb2.Wrapper.SerializeToString,
                 response_deserializer=new__route__guide__pb2.Text.FromString,
                 )
 
@@ -131,7 +131,7 @@ def add_ChatServicer_to_server(servicer, server):
             ),
             'handle_client': grpc.unary_unary_rpc_method_handler(
                     servicer.handle_client,
-                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    request_deserializer=new__route__guide__pb2.Wrapper.FromString,
                     response_serializer=new__route__guide__pb2.Text.SerializeToString,
             ),
     }
@@ -258,7 +258,7 @@ class Chat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/handle_client',
-            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Wrapper.SerializeToString,
             new__route__guide__pb2.Text.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

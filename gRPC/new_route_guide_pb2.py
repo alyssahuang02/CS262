@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15new_route_guide.proto\x12\nrouteguide\"\x14\n\x04Text\x12\x0c\n\x04text\x18\x01 \x01(\t\"J\n\x04Note\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0e\n\x06length\x18\x03 \x01(\x03\x12\x0f\n\x07message\x18\x04 \x01(\t2\x8f\x03\n\x04\x43hat\x12\x32\n\nlogin_user\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12\x35\n\rregister_user\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12=\n\x13record_chat_message\x12\x10.routeguide.Note\x1a\x10.routeguide.Text\"\x00(\x01\x12>\n\x14send_unsent_messages\x12\x10.routeguide.Text\x1a\x10.routeguide.Note\"\x00\x30\x01\x12\x36\n\x0e\x64\x65lete_account\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12.\n\x06logout\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12\x35\n\rhandle_client\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x42\x36\n\x1bio.grpc.examples.routeguideB\x0fRouteGuideProtoP\x01\xa2\x02\x03RTGb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15new_route_guide.proto\x12\nrouteguide\"\x14\n\x04Text\x12\x0c\n\x04text\x18\x01 \x01(\t\"J\n\x04Note\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x11\n\trecipient\x18\x02 \x01(\t\x12\x0e\n\x06length\x18\x03 \x01(\x03\x12\x0f\n\x07message\x18\x04 \x01(\t\"I\n\x07Wrapper\x12\x1e\n\x04note\x18\x01 \x01(\x0b\x32\x10.routeguide.Note\x12\x1e\n\x04text\x18\x02 \x01(\x0b\x32\x10.routeguide.Text2\x92\x03\n\x04\x43hat\x12\x32\n\nlogin_user\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12\x35\n\rregister_user\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12=\n\x13record_chat_message\x12\x10.routeguide.Note\x1a\x10.routeguide.Text\"\x00(\x01\x12>\n\x14send_unsent_messages\x12\x10.routeguide.Text\x1a\x10.routeguide.Note\"\x00\x30\x01\x12\x36\n\x0e\x64\x65lete_account\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12.\n\x06logout\x12\x10.routeguide.Text\x1a\x10.routeguide.Text\"\x00\x12\x38\n\rhandle_client\x12\x13.routeguide.Wrapper\x1a\x10.routeguide.Text\"\x00\x42\x36\n\x1bio.grpc.examples.routeguideB\x0fRouteGuideProtoP\x01\xa2\x02\x03RTGb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'new_route_guide_pb2', globals())
@@ -25,6 +25,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _TEXT._serialized_end=57
   _NOTE._serialized_start=59
   _NOTE._serialized_end=133
-  _CHAT._serialized_start=136
-  _CHAT._serialized_end=535
+  _WRAPPER._serialized_start=135
+  _WRAPPER._serialized_end=208
+  _CHAT._serialized_start=211
+  _CHAT._serialized_end=613
 # @@protoc_insertion_point(module_scope)
