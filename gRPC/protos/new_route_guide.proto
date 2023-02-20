@@ -16,7 +16,7 @@ service Chat {
     rpc delete_account(Text) returns (Text) {}
     rpc logout(Text) returns (Text) {}
 
-    rpc client_receive_message(Empty) returns (stream Note) {}
+    rpc client_receive_message(Text) returns (stream Note) {}
     rpc client_send_message(Note) returns (Text) {}
 
     // rpc handle_client(Wrapper) returns (Text) {}
