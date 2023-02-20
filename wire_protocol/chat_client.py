@@ -35,7 +35,10 @@ class ChatClient:
             self.show_users()
             self.receive_messages()
 
-            self.send_chat_message()
+            # Try again because user invalid
+            while self.send_chat_message() == False:
+                pass
+            
             self.receive_messages()
 
             self.delete_or_logout()
@@ -45,7 +48,11 @@ class ChatClient:
     def show_users(self):
         found_user = False
         while not found_user:
-            recipient = input("What users would you like to see?\n")
+            recipient = input("What users would you like to see? Enter nothing to skip.\n")
+
+            if len(recipient) == 0:
+                return
+
             self.send(purpose=SHOW_ACCOUNTS, body=recipient)
             response = self.receive()[0] # TODO: check this later
 
@@ -91,11 +98,12 @@ class ChatClient:
         response = self.receive()[0] # TODO: bandaid solution
 
         if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
-            self.send_chat_message()
+            return False
         
         message = input("What's your message?\n")
         self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
         response = self.receive()[0] # TODO: bandaid solution
+        return True
     
 
     def receive_messages(self):

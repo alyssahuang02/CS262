@@ -171,13 +171,7 @@ class ChatServer:
                     continue
                 username = parsed_message[BODY]
 
-                # Checks that the user currently logged in is the one who is trying to delete their account
-                for user in self.active_accounts:
-                    if user == username and self.active_accounts[user] == addr:
-                        self.delete_account(conn, username)
-                        continue
-                self.send(conn, NOTIFY, "You cannot another user's account.")
-                continue
+                self.delete_account(conn, username)
             
             elif purpose == SHOW_ACCOUNTS:
                 username = parsed_message[BODY]
