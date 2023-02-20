@@ -105,6 +105,17 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
         except:
             return new_route_guide_pb2.Text(text=DELETION_UNSUCCESSFUL)
         return new_route_guide_pb2.Text(text=DELETION_SUCCESSFUL)
+    
+    def display_accounts(self, request, context):
+        none_found = True
+        username = request.text
+        for account in self.accounts:
+            x = re.search(username, account)
+            if x is not None:
+                none_found = False
+                yield new_route_guide_pb2.Text(text = x.string)
+        if none_found:
+            yield new_route_guide_pb2.Text(text = "No user matches this!")
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time

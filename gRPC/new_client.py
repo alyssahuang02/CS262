@@ -25,6 +25,7 @@ class ChatClient:
         while self.logged_in:
             # TODO: check ordering
             # self.show_users()
+            self.display_accounts()
             self.send_chat_message()
             self.print_messages()
             # TODO: idk where to put this move later lol
@@ -64,6 +65,13 @@ class ChatClient:
             self.username = username
             return username, True
         return username, False
+
+    def display_accounts(self):
+        recipient = input("What users would you like to see?\n")
+        new_text = chat.Text()
+        new_text.text = recipient
+        for response in self.connection.display_accounts(new_text):
+            print(response.text)
     
     def send_chat_message(self):
         recipient = input("Who do you want to send a message to?\n")
