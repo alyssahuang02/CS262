@@ -79,6 +79,7 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
             formatted_message.sender = sender
             formatted_message.message = message
             yield formatted_message
+        self.unsent_messages[recipient] = []
 
     def client_send_message(self, request, context):
         # self.unsent_messages.append(request)

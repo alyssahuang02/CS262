@@ -23,7 +23,7 @@ class ChatClient:
             self.login()
         
         # Receive messages from when they were offline
-        self.receive_messages()
+        self.print_messages()
         
         while self.logged_in:
             # TODO: check ordering
@@ -78,6 +78,7 @@ class ChatClient:
         recipient = input("What users would you like to see?\n")
         new_text = chat.Text()
         new_text.text = recipient
+        print("\nUsers:")
         for response in self.connection.display_accounts(new_text):
             print(response.text)
     
