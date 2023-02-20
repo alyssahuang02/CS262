@@ -180,18 +180,19 @@ class ChatServer:
             
             elif purpose == SHOW_ACCOUNTS:
                 username = parsed_message[BODY]
-                matched_accounts = []
+                matched_accounts = "\nUsers:\n"
+                no_accounts_found_length = len(matched_accounts)
             
                 for account in self.accounts:
-                    x = re.search(username, account)
-                    if x is not None:
-                        mutex_accounts.acquire()
-                        matched_accounts.append(account)
-                        mutex_accounts.release()
-                if len(matched_accounts) == 0:
+                    # I think this regex looks for anything that has that username thingy in it
+                    # x = re.search(username, account)
+                    # if x is not None:
+
+                    if account.startswith(username):
+                        matched_accounts += account + "\n"
+                if len(matched_accounts) == no_accounts_found_length:
                     self.send(conn, NOTIFY, USER_DOES_NOT_EXIST)
                 else:
-                    # might throw an error with lists
                     self.send(conn, NOTIFY, matched_accounts)
 
             elif purpose == LOGOUT:

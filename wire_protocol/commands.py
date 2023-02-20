@@ -33,6 +33,6 @@ NOTIFY = "!NOTIFY"
 
 # Printable messages from NOTIFY
 LOGIN_SUCCESSFUL = "Login successful!"
-USER_DOES_NOT_EXIST = "User does not exist."
+USER_DOES_NOT_EXIST = "No user matches that pattern. Try again."
 DELETION_SUCCESSFUL = "Account deleted."
 LOGOUT_SUCCESSFUL = "Logging out."

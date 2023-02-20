@@ -13,7 +13,7 @@ class ChatClient:
         self.send(purpose=LOGOUT,body=self.username)
         self.client.close() # TODO: check this! idk if this is right
     
-    
+
     def __init__(self):
         try:
             self.connect()
@@ -30,12 +30,11 @@ class ChatClient:
             self.login()
         
         # Receive messages from when they were offline
-        print("first receive")
         self.receive_messages()
-        print("after receive")
+        
         while self.logged_in:
             # TODO: check ordering
-            # self.show_users()
+            self.show_users()
             self.send_chat_message()
             self.receive_messages()
             # TODO: idk where to put this move later lol
@@ -48,11 +47,12 @@ class ChatClient:
             self.send(purpose=SHOW_ACCOUNTS, body=recipient)
             response = self.receive()[0] # TODO: check this later
 
+            # Check if it's an error
             if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
-                print("No user matches that pattern. Try again.")
-            else:
-                print(response[BODY])
-                found_user = True
+                continue
+            
+            # Otherwise, we have found the user
+            found_user = True
         
 
     def enter_user(self, purpose):
