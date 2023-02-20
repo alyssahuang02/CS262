@@ -7,7 +7,6 @@ class ChatClient:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(ADDR)
     
-    # @atexit.register
     def disconnect(self):
         print("Disconecting...")
         self.send(purpose=LOGOUT,body=self.username)
@@ -31,15 +30,18 @@ class ChatClient:
         
         # Receive messages from when they were offline
         self.receive_messages()
-        
+
         while self.logged_in:
-            # TODO: check ordering
             self.show_users()
+            self.receive_messages()
+
             self.send_chat_message()
             self.receive_messages()
-            # TODO: idk where to put this move later lol
-            self.delete_account()
+
+            self.delete_or_logout()
+            self.receive_messages()
     
+
     def show_users(self):
         found_user = False
         while not found_user:
@@ -60,10 +62,8 @@ class ChatClient:
         username = input("What's your username?\n")
         if purpose == "0":
             self.send(purpose=REGISTER,body=username)
-            # msg = self.create_message(purpose=REGISTER, body=username)
         elif purpose == "1":
             self.send(purpose=LOGIN,body=username)
-            # msg = self.create_message(purpose=LOGIN, body=username)
         
         response = self.receive()[0] # TODO: bandaid solution
         if response[PURPOSE] == NOTIFY and response[BODY] == LOGIN_SUCCESSFUL:
@@ -81,6 +81,8 @@ class ChatClient:
                 username, logged_in = self.enter_user(action)
             elif action == "1":
                 username, logged_in = self.enter_user(action)
+        self.username = username
+        self.logged_in = logged_in
             
     
     def send_chat_message(self):
@@ -89,7 +91,7 @@ class ChatClient:
         response = self.receive()[0] # TODO: bandaid solution
 
         if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
-            return
+            self.send_chat_message()
         
         message = input("What's your message?\n")
         self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
@@ -97,6 +99,9 @@ class ChatClient:
     
 
     def receive_messages(self):
+        if not self.logged_in:
+            return
+        
         self.send(purpose=PULL_MESSAGE, body="")
 
         no_more_data = False
@@ -110,12 +115,24 @@ class ChatClient:
             responses = self.receive()
     
 
-    def delete_account(self):
-        action = input("Enter 0 to delete your account.\n")
+    def delete_or_logout(self):
+        if not self.logged_in:
+            return
+        
+        action = input("Enter 0 to delete your account. Enter 1 to logout. Enter anything else to continue.\n")
+        
         if action == "0":
             self.send(purpose=DELETE_ACCOUNT, body=self.username)
-            response = self.receive() # TODO: bandaid solution
+            response = self.receive()[0] # TODO: bandaid solution
             if response[PURPOSE] == NOTIFY and response[BODY] == DELETION_SUCCESSFUL:
+                self.logged_in = False
+                self.username = None
+                self.login()
+        
+        elif action == "1":
+            self.send(purpose=LOGOUT,body=self.username)
+            response = self.receive()[0] # TODO: bandaid solution
+            if response[PURPOSE] == NOTIFY and response[BODY] == LOGOUT_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
                 self.login()

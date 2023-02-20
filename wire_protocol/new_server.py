@@ -38,7 +38,7 @@ class ChatServer:
 
         logged_in = True
         
-        # self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
+        self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
 
     def register_user(self, conn, username, addr):
@@ -120,6 +120,7 @@ class ChatServer:
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def logout(self, conn, username):
+
         mutex_active_accounts.acquire()
         del self.active_accounts[username]
         mutex_active_accounts.release()
@@ -196,23 +197,13 @@ class ChatServer:
                     self.send(conn, NOTIFY, matched_accounts)
 
             elif purpose == LOGOUT:
+                if not logged_in:
+                    self.send(conn, NOTIFY, "You must be logged in to log out.")
+                    continue
+
                 username = parsed_message[BODY]
                 self.logout(conn, username)
                 logged_in = False
-        
-        
-        
-        # connected = True
-        # while connected:
-        #     # depends on your protocol
-        #     msg_length = conn.recv(HEADER).decode(FORMAT)
-        #     if msg_length:
-        #         msg_length = int(msg_length)
-        #         msg = conn.recv(msg_length).decode(FORMAT)
-        #         if msg == DISCONNECT_MESSAGE:
-        #             connected = False
-        #         print(f"[{addr}] {msg}")
-        #         conn.send("Msg received".encode(FORMAT))
 
         conn.close()
 

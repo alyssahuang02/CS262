@@ -3,7 +3,8 @@ HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
 # SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some way to make it dynamic
-SERVER = "Alyssas-MBP.wireless.yale.internal"
+# SERVER = "Alyssas-MBP.wireless.yale.internal"
+SERVER = "Alyssas-MacBook-Pro.local"
 ADDR = (SERVER, PORT)
 
 # Data Types
@@ -33,6 +34,6 @@ NOTIFY = "!NOTIFY"
 
 # Printable messages from NOTIFY
 LOGIN_SUCCESSFUL = "Login successful!"
-USER_DOES_NOT_EXIST = "No user matches that pattern. Try again."
+USER_DOES_NOT_EXIST = "No users found. Try again."
 DELETION_SUCCESSFUL = "Account deleted."
 LOGOUT_SUCCESSFUL = "Logging out."
