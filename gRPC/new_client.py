@@ -2,6 +2,7 @@ from commands import *
 import grpc
 import new_route_guide_pb2 as chat
 import new_route_guide_pb2_grpc
+import atexit
 
 class ChatClient:   
     def __init__(self):
@@ -12,6 +13,8 @@ class ChatClient:
         except Exception as e:
             print("Could not connect to server.")
             return
+
+        atexit.register(self.disconnect)
 
         self.logged_in = False
         self.username = None
@@ -30,6 +33,11 @@ class ChatClient:
             self.print_messages()
             # TODO: idk where to put this move later lol
             self.delete_account()
+
+    def disconnect(self):
+        print("Disconecting...")
+        response = self.connection.logout(chat.Text(text=self.username))
+        print(response.text)
 
     def login(self):
         logged_in = False
@@ -101,15 +109,24 @@ class ChatClient:
             yield f"[{note.sender} sent to {note.recipient}] {note.message}"
 
     def delete_account(self):
-        action = input("Enter 0 to delete your account. Anything else to continue.\n")
+        action = input("Enter 0 to delete your account. Enter 1 to logout. Anything else to continue.\n")
         if action == "0":
             response = self.connection.delete_account(chat.Text(text=self.username))
             print(response.text)
             if response.text == DELETION_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
-                print("You're logged out!")
+                print("You've deleted your account")
                 self.login()
+        elif action == "1":
+            print("output")
+            response = self.connection.logout(chat.Text(text=self.username))
+            print(response.text)
+            if response.text == LOGOUT_SUCCESSFUL:
+                self.logged_in = False
+                self.username = None
+                self.login()
+
 
 chat_client = ChatClient()
 
