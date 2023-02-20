@@ -1,4 +1,4 @@
-from grpc import server
+import grpc
 from grpc._server import _Server
 import new_route_guide_pb2
 import new_route_guide_pb2_grpc
@@ -27,8 +27,6 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
 
     def login_user(self, request, context):
         logged_in = False
-        print(context.peer())
-
         username = request.text
         
         if username not in self.accounts:
@@ -46,6 +44,7 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
         if username in self.accounts:
             return new_route_guide_pb2.Text(text="Username already exists.")
         else:
+            print(f"Registering {username}")
             # Register and log in user
             mutex_active_accounts.acquire()
             self.active_accounts[username] = context.peer()
@@ -68,33 +67,44 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
             return new_route_guide_pb2.Text(text=USER_DOES_NOT_EXIST)
         
     def client_receive_message(self, request, context):
-        print("context!!", context)
         lastindex = 0
-        while True:
-            while len(self.unsent_messages) > lastindex:
-                new_message = self.unsent_messages[lastindex]
-                lastindex += 1
-                yield new_message
+        recipient = request.text
+        while len(self.unsent_messages[recipient]) > lastindex:
+            sender, message = self.unsent_messages[recipient][lastindex]
+            lastindex += 1
+            formatted_message = new_route_guide_pb2.Note()
+            formatted_message.recipient = recipient
+            formatted_message.sender = sender
+            formatted_message.message = message
+            yield formatted_message
 
     def client_send_message(self, request, context):
-        self.unsent_messages.append(request)
+        # self.unsent_messages.append(request)
+        recipient = request.recipient
+        sender = request.sender
+        message = request.message
+        mutex_unsent_messages.acquire()
+        self.unsent_messages[recipient].append((sender, message))
+        mutex_unsent_messages.release()
         return new_route_guide_pb2.Text(text="Message sent!")
 
     def delete_account(self, request, context):
         username = request.text
-        mutex_active_accounts.acquire()
-        del self.active_accounts[username]
-        mutex_active_accounts.release()
+        try: 
+            mutex_active_accounts.acquire()
+            del self.active_accounts[username]
+            mutex_active_accounts.release()
 
-        mutex_unsent_messages.acquire()
-        del self.unsent_messages[username]
-        mutex_unsent_messages.release()
+            mutex_unsent_messages.acquire()
+            del self.unsent_messages[username]
+            mutex_unsent_messages.release()
 
-        mutex_accounts.acquire()
-        self.accounts.remove(username)
-        mutex_accounts.release()
-
-        return new_route_guide_pb2_grpc.Text(text=DELETION_SUCCESSFUL)
+            mutex_accounts.acquire()
+            self.accounts.remove(username)
+            mutex_accounts.release()
+        except:
+            return new_route_guide_pb2.Text(text=DELETION_UNSUCCESSFUL)
+        return new_route_guide_pb2.Text(text=DELETION_SUCCESSFUL)
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
@@ -111,18 +121,17 @@ class ServerRunner:
 
     def __init__(self, ip = "localhost"):
         """Initialize a server instance."""
-        self.ip = socket.gethostbyname(socket.gethostname()) if ip is None else ip
+        # self.ip = socket.gethostbyname(socket.gethostname()) if ip is None else ip
+        self.ip = SERVER
         self.port = PORT
 
-        self.server = server(futures.ThreadPoolExecutor(max_workers=10))
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         self.chat_servicer = ChatServicer()
 
     def start(self):
         """Function for starting server."""
         new_route_guide_pb2_grpc.add_ChatServicer_to_server(self.chat_servicer, self.server)
-        print("ip and port", self.ip, self.port)
-        # self.server.add_insecure_port("[::]:5050")
-        self.server.add_insecure_port(f"{self.ip}:{self.port}")
+        self.server.add_insecure_port(f"[::]:{self.port}")
         self.server.start()
         self.server.wait_for_termination()
 

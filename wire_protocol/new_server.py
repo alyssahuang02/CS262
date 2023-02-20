@@ -38,7 +38,7 @@ class ChatServer:
 
         logged_in = True
         
-        self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
+        # self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
 
     def register_user(self, conn, username, addr):

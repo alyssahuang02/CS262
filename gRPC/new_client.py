@@ -1,17 +1,15 @@
-import grpc
 from commands import *
 import grpc
 import new_route_guide_pb2 as chat
-import new_route_guide_pb2_grpc as grpc
+import new_route_guide_pb2_grpc
 
 class ChatClient:   
     def __init__(self):
         self.connection = None
         try:
-            print(f"{SERVER}:{PORT}")
-            self.connection = grpc.ChatStub(grpc.insecure_channel(f"{SERVER}:{PORT}"))
-            print(self.connection)
-        except:
+            self.connection = new_route_guide_pb2_grpc.ChatStub(grpc.insecure_channel(f"[::]:{PORT}",options=(('grpc.enable_http_proxy', 0),)))
+            print(self.connection.__getattribute__)
+        except Exception as e:
             print("Could not connect to server.")
             return
 
@@ -38,8 +36,10 @@ class ChatClient:
             action = input("Enter 0 to register. Enter 1 to login.\n")
             if action == "0":
                 username, logged_in = self.enter_user(action)
+                self.logged_in = logged_in
             elif action == "1":
                 username, logged_in = self.enter_user(action)
+                self.logged_in = logged_in
     
     def enter_user(self, purpose):
         # Prompts user for username
@@ -47,13 +47,19 @@ class ChatClient:
 
         new_text = chat.Text()
         new_text.text = username
+        
         response = None
         if purpose == "0":
-            response = self.connection.register_user(new_text)
+            try:
+                response = self.connection.register_user(new_text)
+                print(response.text)
+            except Exception as e:
+                print(e)
         elif purpose == "1":
             response = self.connection.login_user(new_text)
-        
-        if response == LOGIN_SUCCESSFUL:
+            print(response.text)
+
+        if response.text == LOGIN_SUCCESSFUL:
             self.logged_in = True
             self.username = username
             return username, True
@@ -65,7 +71,8 @@ class ChatClient:
         new_text.text = recipient
         response = self.connection.check_user_exists(new_text)
 
-        if response == USER_DOES_NOT_EXIST:
+        if response.text == USER_DOES_NOT_EXIST:
+            print(response.text)
             return
         
         message = input("What's your message?\n")
@@ -75,26 +82,25 @@ class ChatClient:
         new_message.message = message
 
         output = self.connection.client_send_message(new_message)
-        print(output)
+        print(output.text)
 
     def print_messages(self):
         for message in self.receive_messages():
             print(message)
 
     def receive_messages(self):
-        for note in self.connection.client_receive_message(chat.Empty()):
+        for note in self.connection.client_receive_message(chat.Text(text=self.username)):
             yield f"[{note.sender} sent to {note.recipient}] {note.message}"
 
     def delete_account(self):
         action = input("Enter 0 to delete your account. Anything else to continue.\n")
         if action == "0":
-            new_message = chat.Text()
-            new_message.text = self.username
-
-            response = self.connection.delete_account(new_message)
-            if response == DELETION_SUCCESSFUL:
+            response = self.connection.delete_account(chat.Text(text=self.username))
+            print(response.text)
+            if response.text == DELETION_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
+                print("You're logged out!")
                 self.login()
 
 chat_client = ChatClient()

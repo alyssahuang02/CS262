@@ -2,7 +2,7 @@
 HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
-# SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
+# SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some way to make it dynamic
 SERVER = "Alyssas-MBP.wireless.yale.internal"
 ADDR = (SERVER, PORT)
 
