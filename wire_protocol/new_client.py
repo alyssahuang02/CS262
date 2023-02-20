@@ -1,4 +1,5 @@
 import socket
+import atexit
 from commands import *
 
 class ChatClient:
@@ -6,12 +7,21 @@ class ChatClient:
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(ADDR)
     
+    # @atexit.register
+    def disconnect(self):
+        print("Disconecting...")
+        self.send(purpose=LOGOUT,body=self.username)
+        self.client.close() # TODO: check this! idk if this is right
+    
+    
     def __init__(self):
         try:
             self.connect()
         except:
             print("Could not connect to server.")
             return
+        
+        atexit.register(self.disconnect)
 
         self.logged_in = False
         self.username = None
@@ -109,10 +119,6 @@ class ChatClient:
                 self.username = None
                 self.login()
 
-
-    def disconnect(self):
-        pass
-
     
     def create_message(self, purpose, body, recipient=None, sender=None):
         data=PURPOSE + SEPARATOR + purpose
@@ -151,13 +157,13 @@ class ChatClient:
                 parsed_message[LENGTH] = length
                 parsed_message[part] = body[:length]
 
-                parsed_messages.append(parsed_message)
-
                 # considering the case where there are multiple messages
                 if len(body) > length:
                     remainder_of_message = body[length:]
-                    parsed_messages += self.parse_messages(remainder_of_message, parsed_messages)
-                break
+                    end_parsed = self.parse_messages(remainder_of_message, [])
+                    parsed_messages += end_parsed
+                
+                return [parsed_message] + parsed_messages
             i += 1
         
         # TODO/CHECK: can we have it such that a message is too long to be sent in one go
@@ -179,6 +185,6 @@ class ChatClient:
                 print(body)
 
         return parsed_messages
-        
+
 
 chat_client = ChatClient()

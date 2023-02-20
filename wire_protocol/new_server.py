@@ -24,12 +24,19 @@ class ChatServer:
 
         if username not in self.accounts:
             self.send(conn, NOTIFY, "Username does not exist.")
-        else:
-            # Log in user
-            mutex_active_accounts.acquire()
-            self.active_accounts[username] = addr
-            mutex_active_accounts.release()
-            logged_in = True
+            return (None, None)
+        
+        # Checks if user is logged in already
+        if username in self.active_accounts:
+            self.send(conn, NOTIFY, "User is already logged in.")
+            return (None, None)
+
+        # Log in user
+        mutex_active_accounts.acquire()
+        self.active_accounts[username] = addr
+        mutex_active_accounts.release()
+
+        logged_in = True
         
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
@@ -42,25 +49,24 @@ class ChatServer:
         # DO WE NEED A MUTEX HERE???
         if username in self.accounts:
             self.send(conn, NOTIFY, "Username already exists.")
-        else:
-            # Register and log in user
+            return (None, None)
+        # Register and log in user
 
-            # TODO: check if these mutices are in correct order
-            mutex_active_accounts.acquire()
-            self.active_accounts[username] = addr
-            mutex_active_accounts.release()
+        # TODO: check if these mutices are in correct order
+        mutex_active_accounts.acquire()
+        self.active_accounts[username] = addr
+        mutex_active_accounts.release()
 
-            mutex_accounts.acquire()
-            self.accounts.append(username)
-            mutex_accounts.release()
+        mutex_accounts.acquire()
+        self.accounts.append(username)
+        mutex_accounts.release()
 
-            mutex_unsent_messages.acquire()
-            self.unsent_messages[username] = []
-            mutex_unsent_messages.release()
-            self.send(conn, NOTIFY, "Login successful!")
+        mutex_unsent_messages.acquire()
+        self.unsent_messages[username] = []
+        mutex_unsent_messages.release()
 
-            registered = True
-        #### Why are we notifying login_successful outside of the if?
+        registered = True
+
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, registered)
 
@@ -114,9 +120,9 @@ class ChatServer:
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def logout(self, conn, username):
-        mutex_active_accounts.acquire().acquire()
+        mutex_active_accounts.acquire()
         del self.active_accounts[username]
-        mutex_active_accounts.acquire().release()
+        mutex_active_accounts.release()
 
         self.send(conn, NOTIFY, LOGOUT_SUCCESSFUL)
     
@@ -188,7 +194,10 @@ class ChatServer:
                     # might throw an error with lists
                     self.send(conn, NOTIFY, matched_accounts)
 
-
+            elif purpose == LOGOUT:
+                username = parsed_message[BODY]
+                self.logout(conn, username)
+                logged_in = False
         
         
         

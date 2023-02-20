@@ -2,7 +2,8 @@
 HEADER = 64
 PORT = 5050
 FORMAT = 'utf-8'
-SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
+# SERVER = "10.250.10.42" # TODO: need to change later/have some way to make it dynamic
+SERVER = "Alyssas-MBP.wireless.yale.internal"
 ADDR = (SERVER, PORT)
 
 # Data Types
@@ -24,6 +25,7 @@ LOGIN = "!LOGIN"
 REGISTER = "!REGISTER"
 PULL_MESSAGE = "!PULL"
 SEND_MESSAGE = "!SEND"
+LOGOUT = "!LOGOUT"
 
 # Server Purposes
 NO_MORE_DATA = "!NOMOREDATA"
@@ -33,7 +35,4 @@ NOTIFY = "!NOTIFY"
 LOGIN_SUCCESSFUL = "Login successful!"
 USER_DOES_NOT_EXIST = "User does not exist."
 DELETION_SUCCESSFUL = "Account deleted."
-LOGOUT_SUCCESSFUL = "Logout successful."
-
-# IDK WHERE THIS ONE IS YET
-DISCONNECT_MESSAGE = "!DISCONNECT"
+LOGOUT_SUCCESSFUL = "Logging out."
