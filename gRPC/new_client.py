@@ -2,6 +2,7 @@ from commands import *
 import grpc
 import new_route_guide_pb2 as chat
 import new_route_guide_pb2_grpc
+import atexit
 
 class ChatClient:   
     def __init__(self):
@@ -13,6 +14,8 @@ class ChatClient:
             print("Could not connect to server.")
             return
 
+        atexit.register(self.disconnect)
+
         self.logged_in = False
         self.username = None
 
@@ -20,15 +23,21 @@ class ChatClient:
             self.login()
         
         # Receive messages from when they were offline
-        self.receive_messages()
+        self.print_messages()
         
         while self.logged_in:
             # TODO: check ordering
             # self.show_users()
+            self.display_accounts()
             self.send_chat_message()
             self.print_messages()
             # TODO: idk where to put this move later lol
             self.delete_account()
+
+    def disconnect(self):
+        print("Disconecting...")
+        response = self.connection.logout(chat.Text(text=self.username))
+        print(response.text)
 
     def login(self):
         logged_in = False
@@ -64,6 +73,14 @@ class ChatClient:
             self.username = username
             return username, True
         return username, False
+
+    def display_accounts(self):
+        recipient = input("What users would you like to see?\n")
+        new_text = chat.Text()
+        new_text.text = recipient
+        print("\nUsers:")
+        for response in self.connection.display_accounts(new_text):
+            print(response.text)
     
     def send_chat_message(self):
         recipient = input("Who do you want to send a message to?\n")
@@ -93,15 +110,24 @@ class ChatClient:
             yield f"[{note.sender} sent to {note.recipient}] {note.message}"
 
     def delete_account(self):
-        action = input("Enter 0 to delete your account. Anything else to continue.\n")
+        action = input("Enter 0 to delete your account. Enter 1 to logout. Anything else to continue.\n")
         if action == "0":
             response = self.connection.delete_account(chat.Text(text=self.username))
             print(response.text)
             if response.text == DELETION_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
-                print("You're logged out!")
+                print("You've deleted your account")
                 self.login()
+        elif action == "1":
+            print("output")
+            response = self.connection.logout(chat.Text(text=self.username))
+            print(response.text)
+            if response.text == LOGOUT_SUCCESSFUL:
+                self.logged_in = False
+                self.username = None
+                self.login()
+
 
 chat_client = ChatClient()
 

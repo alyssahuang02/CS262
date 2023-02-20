@@ -24,6 +24,11 @@ class ChatStub(object):
                 request_serializer=new__route__guide__pb2.Text.SerializeToString,
                 response_deserializer=new__route__guide__pb2.Text.FromString,
                 )
+        self.display_accounts = channel.unary_stream(
+                '/routeguide.Chat/display_accounts',
+                request_serializer=new__route__guide__pb2.Text.SerializeToString,
+                response_deserializer=new__route__guide__pb2.Text.FromString,
+                )
         self.check_user_exists = channel.unary_unary(
                 '/routeguide.Chat/check_user_exists',
                 request_serializer=new__route__guide__pb2.Text.SerializeToString,
@@ -61,6 +66,12 @@ class ChatServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def register_user(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def display_accounts(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -106,6 +117,11 @@ def add_ChatServicer_to_server(servicer, server):
             ),
             'register_user': grpc.unary_unary_rpc_method_handler(
                     servicer.register_user,
+                    request_deserializer=new__route__guide__pb2.Text.FromString,
+                    response_serializer=new__route__guide__pb2.Text.SerializeToString,
+            ),
+            'display_accounts': grpc.unary_stream_rpc_method_handler(
+                    servicer.display_accounts,
                     request_deserializer=new__route__guide__pb2.Text.FromString,
                     response_serializer=new__route__guide__pb2.Text.SerializeToString,
             ),
@@ -173,6 +189,23 @@ class Chat(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/routeguide.Chat/register_user',
+            new__route__guide__pb2.Text.SerializeToString,
+            new__route__guide__pb2.Text.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def display_accounts(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/routeguide.Chat/display_accounts',
             new__route__guide__pb2.Text.SerializeToString,
             new__route__guide__pb2.Text.FromString,
             options, channel_credentials,

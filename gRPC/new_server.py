@@ -31,6 +31,8 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
         
         if username not in self.accounts:
             return new_route_guide_pb2.Text(text="Username does not exist.")
+        elif username in self.active_accounts:
+            return new_route_guide_pb2.Text(text="User is already logged in.")
         else:
             # Log in user
             mutex_active_accounts.acquire()
@@ -77,6 +79,7 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
             formatted_message.sender = sender
             formatted_message.message = message
             yield formatted_message
+        self.unsent_messages[recipient] = []
 
     def client_send_message(self, request, context):
         # self.unsent_messages.append(request)
@@ -105,14 +108,25 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
         except:
             return new_route_guide_pb2.Text(text=DELETION_UNSUCCESSFUL)
         return new_route_guide_pb2.Text(text=DELETION_SUCCESSFUL)
+    
+    def display_accounts(self, request, context):
+        none_found = True
+        username = request.text
+        for account in self.accounts:
+            x = re.search(username, account)
+            if x is not None:
+                none_found = False
+                yield new_route_guide_pb2.Text(text = x.string)
+        if none_found:
+            yield new_route_guide_pb2.Text(text = "No user matches this!")
 
     # Precondition: we have already checked that the username corresponds to
     # the user who was logged in at the time
     def logout(self, request, context):
         username = request.text
-        mutex_active_accounts.acquire().acquire()
+        mutex_active_accounts.acquire()
         del self.active_accounts[username]
-        mutex_active_accounts.acquire().release()
+        mutex_active_accounts.release()
 
         return new_route_guide_pb2.Text(text=LOGOUT_SUCCESSFUL)
 

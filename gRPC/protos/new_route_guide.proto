@@ -11,6 +11,8 @@ service Chat {
     rpc login_user(Text) returns (Text) {}
     rpc register_user(Text) returns (Text) {}
 
+    rpc display_accounts(Text) returns (stream Text) {}
+
     rpc check_user_exists(Text) returns (Text) {}
     
     rpc delete_account(Text) returns (Text) {}
