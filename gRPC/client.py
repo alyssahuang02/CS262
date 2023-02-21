@@ -9,7 +9,6 @@ class ChatClient:
         self.connection = None
         try:
             self.connection = new_route_guide_pb2_grpc.ChatStub(grpc.insecure_channel(f"[::]:{PORT}",options=(('grpc.enable_http_proxy', 0),)))
-            print(self.connection.__getattribute__)
         except Exception as e:
             print("Could not connect to server.")
             return
@@ -117,7 +116,6 @@ class ChatClient:
             if response.text == DELETION_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
-                print("You've deleted your account")
                 self.login()
         elif action == "1":
             print("output")

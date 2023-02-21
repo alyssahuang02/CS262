@@ -71,6 +71,7 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
     def client_receive_message(self, request, context):
         lastindex = 0
         recipient = request.text
+        mutex_unsent_messages.acquire()
         while len(self.unsent_messages[recipient]) > lastindex:
             sender, message = self.unsent_messages[recipient][lastindex]
             lastindex += 1
@@ -79,7 +80,9 @@ class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
             formatted_message.sender = sender
             formatted_message.message = message
             yield formatted_message
+        mutex_unsent_messages.release()
         self.unsent_messages[recipient] = []
+
 
     def client_send_message(self, request, context):
         # self.unsent_messages.append(request)
