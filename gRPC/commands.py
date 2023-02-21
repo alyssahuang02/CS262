@@ -2,7 +2,7 @@
 HEADER = 64
 PORT = 8500
 FORMAT = 'utf-8'
-SERVER = "dhcp-10-250-236-34.harvard.edu" # TODO: need to change later/have some way to make it dynamic
+SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some way to make it dynamic
 ADDR = (SERVER, PORT)
 
 # Data Types
