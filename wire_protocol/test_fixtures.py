@@ -49,3 +49,8 @@ def receive_multiple_messages():
 @pytest.fixture
 def notify_message_login_successful():
     return "!PURPOSE:/!NOTIFY/!LENGTH:/17/!BODY:/Login successful!"
+
+
+@pytest.fixture
+def send_single_message():
+    return ["!PURPOSE:/!NOTIFY/!LENGTH:/21/!BODY:/alyssa sends: hi dale", "!PURPOSE:/!NOMOREDATA/!LENGTH:/1/!BODY:/ "]

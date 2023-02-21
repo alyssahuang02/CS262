@@ -13,12 +13,13 @@ class ChatClient:
         self.client.close() # TODO: check this! idk if this is right
     
 
-    def __init__(self):
-        try:
-            self.connect()
-        except:
-            print("Could not connect to server.")
-            return
+    def __init__(self, test=False):
+        if not False:
+            try:
+                self.connect()
+            except:
+                print("Could not connect to server.")
+                return
         
         atexit.register(self.disconnect)
 
@@ -211,6 +212,3 @@ class ChatClient:
                 print(body)
 
         return parsed_messages
-
-
-chat_client = ChatClient()

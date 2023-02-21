@@ -9,56 +9,56 @@ from test_fixtures import *
 
 def test_register(register_message):
     # Testing sending a register message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(REGISTER, "dale")
     assert data == register_message
 
 
 def test_login(login_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(LOGIN, "dale")
     assert data == login_message
 
 
 def test_show_accounts(show_accounts_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(SHOW_ACCOUNTS, "dale")
     assert data == show_accounts_message
 
 
 def test_check_user_exists_message(check_user_exists_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(CHECK_USER_EXISTS, "dale")
     assert data == check_user_exists_message
 
 
 def test_pull(pull_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(PULL_MESSAGE, "")
     assert data == pull_message
 
 
 def test_delete_account(delete_account_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(DELETE_ACCOUNT, "dale")
     assert data == delete_account_message
 
 
 def test_logout(logout_message):
     # Testing sending a login message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.create_message(LOGOUT, "dale")
     assert data == logout_message
 
 
 def test_parse_notify(notify_message_login_successful):
     # Testing parsing a notify message
-    client = ChatClient()
+    client = ChatClient(test=True)
     data = client.parse_messages(notify_message_login_successful, [])
 
     assert len(data) == 1
@@ -69,7 +69,7 @@ def test_parse_notify(notify_message_login_successful):
 
 
 def test_receive_messages(receive_single_message, receive_multiple_messages):
-    client = ChatClient()
+    client = ChatClient(test=True)
 
     # Testing receiving a single message
     data = client.parse_messages(receive_single_message, [])

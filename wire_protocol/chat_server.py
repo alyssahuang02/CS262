@@ -8,9 +8,10 @@ mutex_accounts = threading.Lock()
 mutex_active_accounts = threading.Lock()
 
 class ChatServer:
-    def __init__(self):
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.bind(ADDR)
+    def __init__(self, test=False):
+        if not test:
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server.bind(ADDR)
 
         # TODO: will need to use a mutex lock for each of these likely
         self.unsent_messages = {} # {username: [msg1, msg2, msg3]}
@@ -224,12 +225,7 @@ class ChatServer:
             raise ValueError
 
 
-    # Return a dictionary representation of the message
-    def receive(self, conn):
-        try:
-            full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
-        except:
-            raise ValueError
+    def parse_message(self, full_message):
         split_message = full_message.split("/")
         parsed_message = {}
         i = 0
@@ -245,6 +241,16 @@ class ChatServer:
                 break
             i += 1
         return parsed_message
+    
+
+    # Return a dictionary representation of the message
+    def receive(self, conn):
+        try:
+            full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
+        except:
+            raise ValueError
+        
+        return self.parse_message(full_message)
 
         
     # Notes: new thread for each client! (do we have to log them out?)
@@ -256,7 +262,3 @@ class ChatServer:
             thread = threading.Thread(target=self.handle_client, args=(conn, addr))
             thread.start()
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
-
-chat_server = ChatServer()
-print("[STARTING] server is starting...")
-chat_server.start()
