@@ -154,7 +154,3 @@ class ServerRunner:
         self.server.stop(grace=None)
         self.thread_pool.shutdown(wait=False)
 
-
-chat_server = ServerRunner()
-print("[STARTING] server is starting...")
-chat_server.start()
