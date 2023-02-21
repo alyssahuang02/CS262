@@ -8,8 +8,9 @@ class ChatClient:
     def __init__(self):
         self.connection = None
         try:
-            self.connection = new_route_guide_pb2_grpc.ChatStub(grpc.insecure_channel(f"[::]:{PORT}",options=(('grpc.enable_http_proxy', 0),)))
+            self.connection = new_route_guide_pb2_grpc.ChatStub(grpc.insecure_channel(f"{SERVER}:{PORT}"))
         except Exception as e:
+            print(e)
             print("Could not connect to server.")
             return
 

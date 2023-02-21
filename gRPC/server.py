@@ -17,9 +17,6 @@ mutex_active_accounts = threading.Lock()
 
 class ChatServicer(new_route_guide_pb2_grpc.ChatServicer):
     def __init__(self):
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.bind(ADDR)
-
         # TODO: will need to use a mutex lock for each of these likely
         self.unsent_messages = {} # {username: [msg1, msg2, msg3]}
         self.accounts = [] # [username1, username2, username3]
