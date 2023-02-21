@@ -18,7 +18,7 @@ def test_register(register_message):
 
 
 def test_login(login_message):
-    # Testing parsing a register message
+    # Testing parsing a login message
     server = ChatServer(test=True)
 
     message = server.parse_message(login_message)
@@ -28,7 +28,7 @@ def test_login(login_message):
 
 
 def test_show_accounts(show_accounts_message):
-    # Testing parsing a register message
+    # Testing parsing a show accounts message
     server = ChatServer(test=True)
 
     message = server.parse_message(show_accounts_message)
@@ -38,7 +38,7 @@ def test_show_accounts(show_accounts_message):
 
 
 def test_check_user_exists_message(check_user_exists_message):
-    # Testing parsing a register message
+    # Testing parsing a checking user exists message
     server = ChatServer(test=True)
 
     message = server.parse_message(check_user_exists_message)
@@ -48,7 +48,7 @@ def test_check_user_exists_message(check_user_exists_message):
 
 
 def test_pull(pull_message):
-    # Testing parsing a register message
+    # Testing parsing a pull message
     server = ChatServer(test=True)
 
     message = server.parse_message(pull_message)
@@ -56,7 +56,7 @@ def test_pull(pull_message):
 
 
 def test_delete_account(delete_account_message):
-    # Testing parsing a register message
+    # Testing parsing a delete account message
     server = ChatServer(test=True)
 
     message = server.parse_message(delete_account_message)
@@ -66,7 +66,7 @@ def test_delete_account(delete_account_message):
 
 
 def test_logout(logout_message):
-    # Testing parsing a register message
+    # Testing parsing a logout message
     server = ChatServer(test=True)
 
     message = server.parse_message(logout_message)
@@ -83,7 +83,7 @@ def test_send_notify(notify_message_login_successful):
 
 
 def test_send_message(send_single_message):
-    # Testing sending a notify message
+    # Testing sending a chat message
     server = ChatServer(test=True)
     data = server.create_message(NOTIFY, "alyssa sends: hi dale")
     assert data == send_single_message[0]
