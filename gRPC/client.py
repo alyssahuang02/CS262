@@ -5,7 +5,10 @@ import new_route_guide_pb2_grpc
 import atexit
 
 class ChatClient:   
-    def __init__(self):
+    def __init__(self, test=False):
+        if test:
+            return 
+        
         self.connection = None
         try:
             self.connection = new_route_guide_pb2_grpc.ChatStub(grpc.insecure_channel(f"{SERVER}:{PORT}"))
@@ -126,10 +129,6 @@ class ChatClient:
                 self.logged_in = False
                 self.username = None
                 self.login()
-
-
-chat_client = ChatClient()
-
 
     
 
