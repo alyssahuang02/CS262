@@ -24,18 +24,22 @@ class ChatClient:
 
         while not self.logged_in:
             self.login()
-        
+
         # Receive messages from when they were offline
         self.print_messages()
         
         while self.logged_in:
-            # TODO: check ordering
-            # self.show_users()
             self.display_accounts()
-            self.send_chat_message()
             self.print_messages()
-            # TODO: idk where to put this move later lol
-            self.delete_account()
+
+            # Try again because recipient invalid
+            while self.send_chat_message() == False:
+                pass
+
+            self.print_messages()
+            
+            self.delete_or_logout()
+            self.print_messages()
 
     def disconnect(self):
         print("Disconecting...")
@@ -59,7 +63,7 @@ class ChatClient:
 
         new_text = chat.Text()
         new_text.text = username
-        
+
         response = None
         if purpose == "0":
             try:
@@ -93,7 +97,7 @@ class ChatClient:
 
         if response.text == USER_DOES_NOT_EXIST:
             print(response.text)
-            return
+            return False
         
         message = input("What's your message?\n")
         new_message = chat.Note()
@@ -103,6 +107,7 @@ class ChatClient:
 
         output = self.connection.client_send_message(new_message)
         print(output.text)
+        return True
 
     def print_messages(self):
         for message in self.receive_messages():
@@ -112,7 +117,7 @@ class ChatClient:
         for note in self.connection.client_receive_message(chat.Text(text=self.username)):
             yield f"[{note.sender} sent to {note.recipient}] {note.message}"
 
-    def delete_account(self):
+    def delete_or_logout(self):
         action = input("Enter 0 to delete your account. Enter 1 to logout. Anything else to continue.\n")
         if action == "0":
             response = self.connection.delete_account(chat.Text(text=self.username))
@@ -129,6 +134,3 @@ class ChatClient:
                 self.logged_in = False
                 self.username = None
                 self.login()
-
-    
-

@@ -36,7 +36,7 @@ class ChatClient:
             self.show_users()
             self.receive_messages()
 
-            # Try again because user invalid
+            # Try again because recipient invalid
             while self.send_chat_message() == False:
                 pass
             
