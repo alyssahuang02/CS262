@@ -241,6 +241,7 @@ class ChatServer:
                 parsed_message[part] = body[:length]
                 break
             i += 1
+        print(parsed_message)
         return parsed_message
     
 
