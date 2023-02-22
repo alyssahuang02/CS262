@@ -1,5 +1,7 @@
 # CS262
 
+Assumes users have conda installed. This links helps with installation problems: https://stackoverflow.com/questions/31615322/zsh-conda-pip-installs-command-not-found.
+
 ## Wire Protocol
 ### Setup
 1. Setup a new environment through `spec-file.txt`. Run `conda create --name <env> --file spec-file.txt`
