@@ -244,10 +244,6 @@ class ChatClient:
             full_message = self.client.recv(MAX_BANDWIDTH).decode(FORMAT)
             parsed_message = self.parse_message(full_message)
 
-            if parsed_message[PURPOSE] == NOTIFY and parsed_message[BODY] == DISCONNECT:
-                self.disconnect()
-                return
-
             if parsed_message[PURPOSE] == NOTIFY:
                 body = parsed_message[BODY]
                 print(body)
