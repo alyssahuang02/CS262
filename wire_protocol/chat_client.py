@@ -127,9 +127,11 @@ class ChatClient:
         return recipient
 
     def verify_message(self, recipient):
-        message = input("What's your message?\n")
-        if len(message) != 0:
+        while True:
+            message = input("What's your message?\n")
+            if len(message) != 0:
                 break
+
         success = self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
         if not success:
             print("Please enter a shorter message.")
