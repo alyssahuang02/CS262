@@ -14,12 +14,14 @@ class ChatClient:
     
 
     def __init__(self, test=False):
-        if not False:
-            try:
-                self.connect()
-            except:
-                print("Could not connect to server.")
-                return
+        if test:
+            return
+        
+        try:
+            self.connect()
+        except:
+            print("Could not connect to server.")
+            return
         
         atexit.register(self.disconnect)
 

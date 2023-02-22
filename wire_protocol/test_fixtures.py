@@ -23,7 +23,7 @@ def check_user_exists_message():
 
 @pytest.fixture
 def pull_message():
-    return "!PURPOSE:/!PULL"
+    return "!PURPOSE:/!PULL/!LENGTH:/1/!BODY:/ "
 
 
 @pytest.fixture
@@ -38,12 +38,12 @@ def logout_message():
 
 @pytest.fixture
 def receive_single_message():
-    return "!PURPOSE:/!NOTIFY/!LENGTH:/21/!BODY:/alyssa sends: hi dale!PURPOSE:/!NOMOREDATA/!LENGTH:/1/!BODY:/ "
+    return "!PURPOSE:/!NOTIFY/!LENGTH:/21/!BODY:/alyssa sends: hi dale"
 
 
 @pytest.fixture
-def receive_multiple_messages():
-    return "!PURPOSE:/!NOTIFY/!LENGTH:/23/!BODY:/alyssa sends: hi dale 1!PURPOSE:/!NOTIFY/!LENGTH:/23/!BODY:/alyssa sends: hi dale 2!PURPOSE:/!NOTIFY/!LENGTH:/23/!BODY:/alyssa sends: hi dale 3!PURPOSE:/!NOMOREDATA/!LENGTH:/1/!BODY:/ "
+def receive_no_more_data():
+    return "!PURPOSE:/!NOMOREDATA/!LENGTH:/1/!BODY:/ "
 
 
 @pytest.fixture
