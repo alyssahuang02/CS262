@@ -1,6 +1,7 @@
 import socket
 import atexit
 from commands import *
+import time
 
 class ChatClient:
     def connect(self):
@@ -10,6 +11,7 @@ class ChatClient:
     def disconnect(self):
         print("Disconecting...")
         self.send(purpose=LOGOUT,body=self.username)
+        print("Logged out!")
         self.client.close() # TODO: check this! idk if this is right
     
 
@@ -38,7 +40,9 @@ class ChatClient:
             self.show_users()
             self.receive_messages()
 
-            self.send_chat_message()   
+            # Try again because recipient invalid
+            while self.send_chat_message() == False:
+                pass
             self.receive_messages()
 
             self.delete_or_logout()
@@ -48,7 +52,7 @@ class ChatClient:
     def show_users(self):
         found_user = False
         while not found_user:
-            recipient = input("What users would you like to see? Enter nothing to skip.\n")
+            recipient = input("What users would you like to see? Use a regular expression. Enter nothing to skip.\n")
 
             if len(recipient) == 0:
                 return
@@ -69,7 +73,11 @@ class ChatClient:
 
     def enter_user(self, purpose):
         # Prompts user for username
-        username = input("What's your username?\n")
+        while True:
+            username = input("What's your username?\n")
+            if len(username) != 0:
+                break
+        
         if purpose == "0":
             success = self.send(purpose=REGISTER,body=username)
             if not success:
@@ -102,7 +110,10 @@ class ChatClient:
     
 
     def verify_recipient(self):
-        recipient = input("Who do you want to send a message to?\n")
+        while True:
+            recipient = input("Who do you want to send a message to?\n")
+            if len(recipient) != 0:
+                    break
         success = self.send(purpose=CHECK_USER_EXISTS, body=recipient)
         if not success:
             print("Please enter a shorter username.")
@@ -115,9 +126,10 @@ class ChatClient:
         
         return recipient
 
-    
     def verify_message(self, recipient):
         message = input("What's your message?\n")
+        if len(message) != 0:
+                break
         success = self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
         if not success:
             print("Please enter a shorter message.")

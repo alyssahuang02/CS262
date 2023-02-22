@@ -82,7 +82,7 @@ class ChatClient:
         return username, False
 
     def display_accounts(self):
-        recipient = input("What users would you like to see?\n")
+        recipient = input("What users would you like to see? Use a regular expression. Enter nothing to skip.\n")
         new_text = chat.Text()
         new_text.text = recipient
         print("\nUsers:")

@@ -11,7 +11,7 @@
 - Change prompt for deletion - "Enter 0 to delete, enter anything else if not." (done)
 - List accounts (done)
 - Two people logging in to the same account from different laptops (done just errors out)
-- Make regex consistent across grpc and wire
+- Make regex consistent across grpc and wires
 
 Build this in a repo on github that you make publicly available. The repo should include a README file that gives a set of instructions on setting up the client and server so that the system can be run. Part of your grade will depend on how well the code that you provide is documented. You may write you client and server in any of (or any combination of) python, C, C++, Java, or C#. Any other language requires the explicit permission of the instructor, which you won't get. Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
@@ -34,8 +34,11 @@ Build this in a repo on github that you make publicly available. The repo should
 ## gRPC
 ### Setup
 1. Setup a new environment through `requirements.txt`
-2. Navigate to `gRPC` folder through `cd gRPC`
 3. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server.
+
+### Running the Server
+
+### Running the Client
 
 - install grpcio
 - install google-api-python-client
