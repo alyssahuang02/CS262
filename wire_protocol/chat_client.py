@@ -46,8 +46,6 @@ class ChatClient:
     def __init__(self, test=False):
         if test:
             return
-        
-        atexit.register(self.disconnect)
 
         self.run()
     
@@ -55,7 +53,7 @@ class ChatClient:
     def show_users(self):
         found_user = False
         while not found_user:
-            recipient = input("What users would you like to see? Use a regular expression. Enter nothing to skip.\n")
+            recipient = input("What users would you like to see? Enter nothing to skip.\n")
 
             if len(recipient) == 0:
                 return
@@ -244,11 +242,11 @@ class ChatClient:
     def receive(self):
         try:
             full_message = self.client.recv(MAX_BANDWIDTH).decode(FORMAT)
-        except:
-            raise ValueError
-        
-        try:
             parsed_message = self.parse_message(full_message)
+
+            if parsed_message[PURPOSE] == NOTIFY and parsed_message[BODY] == DISCONNECT:
+                self.disconnect()
+                return
 
             if parsed_message[PURPOSE] == NOTIFY:
                 body = parsed_message[BODY]

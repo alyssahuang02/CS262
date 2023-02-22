@@ -197,8 +197,6 @@ class ChatServer:
                 self.logout(conn, username)
                 logged_in = False
 
-        conn.close()
-
 
     def create_message(self, purpose, body, recipient=None, sender=None):
         data=PURPOSE + SEPARATOR + purpose
@@ -250,10 +248,9 @@ class ChatServer:
     def receive(self, conn):
         try:
             full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
+            return self.parse_message(full_message)
         except:
-            raise ValueError
-        
-        return self.parse_message(full_message)
+            conn.send(self.create_message(NOTIFY, DISCONNECT).encode(FORMAT))
 
         
     # Notes: new thread for each client! (do we have to log them out?)
