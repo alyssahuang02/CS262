@@ -243,6 +243,7 @@ class ChatServer:
                 parsed_message[part] = body[:length]
                 break
             i += 1
+        print(parsed_message)
         return parsed_message
     
 
@@ -250,6 +251,7 @@ class ChatServer:
     def receive(self, conn):
         try:
             full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
+            print(full_message)
         except:
             raise ValueError
         
