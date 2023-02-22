@@ -5,9 +5,7 @@ import new_route_guide_pb2_grpc
 import atexit
 
 class ChatClient:   
-    '''
-        Instantiates the ChatClient and runs the user experience of cycling through chat functionalities
-    '''
+    '''Instantiates the ChatClient and runs the user experience of cycling through chat functionalities.'''
     def __init__(self, test=False):
         if test:
             return 
@@ -44,17 +42,13 @@ class ChatClient:
             self.delete_or_logout()
             self.print_messages()
 
-    '''
-        Disconnect logs out user when process is interrupted
-    '''
+    '''Disconnect logs out user when process is interrupted.'''
     def disconnect(self):
         print("Disconecting...")
         response = self.connection.logout(chat.Text(text=self.username))
         print(response.text)
 
-    '''
-        Logins user by prompting either to register or login to their account
-    '''
+    '''Logins user by prompting either to register or login to their account.'''
     def login(self):
         logged_in = False
         while not logged_in:
@@ -66,9 +60,7 @@ class ChatClient:
                 username, logged_in = self.enter_user(action)
                 self.logged_in = logged_in
     
-    '''
-        Helper function to login for users to either register or login
-    '''
+    '''Helper function to login for users to either register or login.'''
     def enter_user(self, purpose):
         # Prompts user for username
         username = input("What's your username?\n")
@@ -93,9 +85,7 @@ class ChatClient:
             return username, True
         return username, False
 
-    '''
-        Displays username accounts for the user to preview given prompt
-    '''
+    '''Displays username accounts for the user to preview given prompt.'''
     def display_accounts(self):
         recipient = input("What users would you like to see? Use a regular expression. Enter nothing to skip.\n")
         new_text = chat.Text()
@@ -104,9 +94,7 @@ class ChatClient:
         for response in self.connection.display_accounts(new_text):
             print(response.text)
     
-    '''
-        Sends 
-    '''
+    '''Prompts user to specify recipient of their message and the message body. Creates the Note object encompassing the message then sends the message to the server.'''
     def send_chat_message(self):
         recipient = input("Who do you want to send a message to?\n")
         new_text = chat.Text()
@@ -127,14 +115,17 @@ class ChatClient:
         print(output.text)
         return True
 
+    '''Handles the print of all the messages sent to the user.'''
     def print_messages(self):
         for message in self.receive_messages():
             print(message)
 
+    '''User pulls message sent to them from the server.'''
     def receive_messages(self):
         for note in self.connection.client_receive_message(chat.Text(text=self.username)):
             yield f"[{note.sender} sent to {note.recipient}] {note.message}"
 
+    '''Prompts user to delete or logout their account or continue the flow of their chat.'''
     def delete_or_logout(self):
         action = input("Enter 0 to delete your account. Enter 1 to logout. Anything else to continue.\n")
         if action == "0":

@@ -8,16 +8,17 @@ mutex_accounts = threading.Lock()
 mutex_active_accounts = threading.Lock()
 
 class ChatServer:
+    '''Initializes the Chat Server that sets up the datastructures to store user accounts and messages.'''
     def __init__(self, test=False):
         if not test:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server.bind(ADDR)
 
-        # TODO: will need to use a mutex lock for each of these likely
         self.unsent_messages = {} # {username: [msg1, msg2, msg3]}
         self.accounts = [] # [username1, username2, username3]
         self.active_accounts = {} # {username: addr}
 
+    '''Logins the user by checking the list of accounts stored in the server session.'''
     def login_user(self, conn, username, addr):
         logged_in = False
         
@@ -42,18 +43,16 @@ class ChatServer:
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, logged_in)
 
+    '''Registers user given the client's input and compares with existing account stores.'''
     def register_user(self, conn, username, addr):
         registered = False
         
         print(f"[{addr}] {username}")
 
-        # DO WE NEED A MUTEX HERE???
         if username in self.accounts:
             self.send(conn, NOTIFY, "Username already exists.")
             return (None, None)
-        # Register and log in user
-
-        # TODO: check if these mutices are in correct order
+        
         mutex_active_accounts.acquire()
         self.active_accounts[username] = addr
         mutex_active_accounts.release()
@@ -71,7 +70,7 @@ class ChatServer:
         self.send(conn, NOTIFY, LOGIN_SUCCESSFUL)
         return (username, registered)
 
-    # Precondition: recipient is in list of accounts
+    '''Handles the clients sending messages to other clients. Assumes recipient is already registered.'''
     def record_chat_message(self, conn, sender, recipient, msg):
         mutex_unsent_messages.acquire()
         self.unsent_messages[recipient].append((sender, msg))
@@ -79,7 +78,7 @@ class ChatServer:
         self.send(conn, NOTIFY, "Message sent!")
     
 
-    # Sends all unsent messages to the user who is currently connected at given address
+    '''Handles the clients receiving messages sent to them. Delivers the message to the clients then clears sent messages'''
     def send_unsent_messages(self, conn, addr):
         for recipient in self.unsent_messages:
             messages = self.unsent_messages[recipient]
@@ -100,8 +99,7 @@ class ChatServer:
                     # Assumes user is only logged into one terminal
                     self.send(conn, NO_MORE_DATA, " ")
 
-    # Precondition: we have already checked that the username corresponds to
-    # the user who was logged in at the time
+    '''Deletes the account for the client requesting the deletion. Precondition: we have already checked that the username corresponds to the user who was logged in at the time'''
     def delete_account(self, conn, username):
         mutex_active_accounts.acquire()
         del self.active_accounts[username]
@@ -118,8 +116,7 @@ class ChatServer:
         self.send(conn, NOTIFY, DELETION_SUCCESSFUL)
     
 
-    # Precondition: we have already checked that the username corresponds to
-    # the user who was logged in at the time
+    '''Logs out the user. Assumes that the user is already logged in and is displayed as an active account. Precondition: we have already checked that the username corresponds to the user who was logged in at the time'''
     def logout(self, conn, username):
 
         mutex_active_accounts.acquire()
@@ -128,12 +125,11 @@ class ChatServer:
 
         self.send(conn, NOTIFY, LOGOUT_SUCCESSFUL)
     
-
+    '''Includes the core logic to handle all messages sent by the client'''
     def handle_client(self, conn, addr):
         print(f"[NEW CONNECTION] {addr} connected.")
         logged_in = False
 
-        # while not disconnected
         while True:
             parsed_message = self.receive(conn)
 
@@ -197,7 +193,7 @@ class ChatServer:
                 self.logout(conn, username)
                 logged_in = False
 
-
+    '''Creates the message to be parsed according to the designed wire protocol'''
     def create_message(self, purpose, body, recipient=None, sender=None):
         data=PURPOSE + SEPARATOR + purpose
         if recipient and sender:
@@ -210,7 +206,7 @@ class ChatServer:
         
         return data
     
-    
+    '''Sends the message to the client.'''
     def send(self, conn, purpose, body, recipient=None, sender=None):
         msg = self.create_message(purpose, body, recipient, sender)
         try:
@@ -225,7 +221,7 @@ class ChatServer:
         
         return True
 
-
+    '''Receives and parses the message from clients per the designed wire protocol.'''
     def parse_message(self, full_message):
         split_message = full_message.split("/")
         parsed_message = {}
@@ -245,7 +241,7 @@ class ChatServer:
         return parsed_message
     
 
-    # Return a dictionary representation of the message
+    '''Return a dictionary representation of the message'''
     def receive(self, conn):
         try:
             full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
@@ -254,7 +250,7 @@ class ChatServer:
             return self.receive(conn)
 
         
-    # Notes: new thread for each client! (do we have to log them out?)
+    '''Runs the server and launches the threads for all new client connections.'''
     def start(self):
         self.server.listen()
         print(f"[LISTENING] Server is listening on {SERVER}")

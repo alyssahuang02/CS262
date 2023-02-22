@@ -4,16 +4,18 @@ from commands import *
 import time
 
 class ChatClient:
+    '''Client connects to the address of the server'''
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(ADDR)
     
+    '''Client handles unexpected network disconnects and restarts the chat logic.'''
     def disconnect(self):
         print("Network error detected. Disconecting and reconnecting...")
         self.send(purpose=LOGOUT,body=self.username)
         self.run()
 
-    
+    '''Incorporates the chat flow and sequence of prompts given to the user.'''
     def run(self):
         try:
             self.connect()
@@ -42,14 +44,14 @@ class ChatClient:
             self.delete_or_logout()
             self.receive_messages()
     
-
+    '''Initializes the function and starts the run function'''
     def __init__(self, test=False):
         if test:
             return
 
         self.run()
     
-
+    '''Prompts user for the start of a username'''
     def show_users(self):
         found_user = False
         while not found_user:
@@ -59,7 +61,7 @@ class ChatClient:
                 return
 
             if not self.send(purpose=SHOW_ACCOUNTS, body=recipient):
-                print("Please enter a shorter regular expression.")
+                print("Please enter a shorter prompt.")
                 continue
 
             response = self.receive()
@@ -71,7 +73,7 @@ class ChatClient:
             # Otherwise, we have found the user
             found_user = True
         
-
+    '''Helper function to handle registering or loggin in the user and sends the user input to the server.'''
     def enter_user(self, purpose):
         # Prompts user for username
         while True:
@@ -102,6 +104,7 @@ class ChatClient:
         
         return username, False
 
+    '''Prompts the user to register or login'''
     def login(self):
         logged_in = False
         while not logged_in:
@@ -113,7 +116,7 @@ class ChatClient:
         self.username = username
         self.logged_in = logged_in
     
-
+    '''Verifies the recipient of the message created by the user exists through a server message.'''
     def verify_recipient(self):
         while True:
             recipient = input("Who do you want to send a message to?\n")
@@ -131,6 +134,7 @@ class ChatClient:
         
         return recipient
 
+    '''Verifies the messsage sent by the user is valid for designed wire protocol specifications.'''
     def verify_message(self, recipient):
         while True:
             message = input("What's your message?\n")
@@ -144,7 +148,7 @@ class ChatClient:
 
         return True
         
-    
+    '''Sends the message to the server to be delivered to another client'''
     def send_chat_message(self):
         recipient = self.verify_recipient()
         while not recipient:
@@ -155,7 +159,7 @@ class ChatClient:
         
         response = self.receive()
     
-
+    '''Receives the messages sent to the user from the server.'''
     def receive_messages(self):
         if not self.logged_in:
             return
@@ -168,7 +172,7 @@ class ChatClient:
                 return
             response = self.receive()
     
-
+    '''Deletes or logs the user out based on user input.'''
     def delete_or_logout(self):
         if not self.logged_in:
             return
@@ -191,7 +195,7 @@ class ChatClient:
                 self.username = None
                 self.login()
 
-    
+    '''Creates the message string per the designed wire protocol.'''
     def create_message(self, purpose, body, recipient=None, sender=None):
         data=PURPOSE + SEPARATOR + purpose
         if recipient and sender:
@@ -204,7 +208,7 @@ class ChatClient:
         
         return data
 
-
+    '''Sends the message to the server per the designed wire protocol.'''
     def send(self, purpose, body, recipient=None, sender=None):
         msg = self.create_message(purpose, body, recipient, sender)
         try:
