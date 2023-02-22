@@ -1,6 +1,8 @@
 # CS262
 
-Assumes users have conda installed. This links helps with installation problems: https://stackoverflow.com/questions/31615322/zsh-conda-pip-installs-command-not-found.
+Engineering Ledger: https://docs.google.com/document/d/14WZj8c5G9HihEbKv3AtZY1nqF4G7Ni2iq0nqKguj4bw/edit#
+
+**Note:** Assumes users have conda installed. This links helps with installation problems: https://stackoverflow.com/questions/31615322/zsh-conda-pip-installs-command-not-found.
 
 ## Wire Protocol
 ### Setup
