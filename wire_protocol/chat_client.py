@@ -255,4 +255,5 @@ class ChatClient:
             return parsed_message
         
         except:
-            print("")
+            return self.receive()
+
