@@ -2,7 +2,8 @@
 HEADER = 64
 PORT = 8500
 FORMAT = 'utf-8'
-SERVER = "dhcp-10-250-18-31.harvard.edu" # TODO: need to change later/have some way to make it dynamic
+## Edit Server below to the hostname of the machine running the server
+SERVER = "dhcp-10-250-18-31.harvard.edu" 
 ADDR = (SERVER, PORT)
 
 # Data Types
@@ -14,7 +15,7 @@ BODY = "!BODY:"
 
 # General
 SEPARATOR = "/"
-MAX_BANDWIDTH = 2048 # TODO: WE HAVE TO CHECK STUFF DOES NOT EXCEED THIS
+MAX_BANDWIDTH = 2048 
 
 # Client Purposes
 CHECK_USER_EXISTS = "!CHECKUSEREXISTS"

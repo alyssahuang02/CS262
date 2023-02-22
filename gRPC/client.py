@@ -5,6 +5,9 @@ import new_route_guide_pb2_grpc
 import atexit
 
 class ChatClient:   
+    '''
+        Instantiates the ChatClient and runs the user experience of cycling through chat functionalities
+    '''
     def __init__(self, test=False):
         if test:
             return 
@@ -41,11 +44,17 @@ class ChatClient:
             self.delete_or_logout()
             self.print_messages()
 
+    '''
+        Disconnect logs out user when process is interrupted
+    '''
     def disconnect(self):
         print("Disconecting...")
         response = self.connection.logout(chat.Text(text=self.username))
         print(response.text)
 
+    '''
+        Logins user by prompting either to register or login to their account
+    '''
     def login(self):
         logged_in = False
         while not logged_in:
@@ -57,6 +66,9 @@ class ChatClient:
                 username, logged_in = self.enter_user(action)
                 self.logged_in = logged_in
     
+    '''
+        Helper function to login for users to either register or login
+    '''
     def enter_user(self, purpose):
         # Prompts user for username
         username = input("What's your username?\n")
@@ -81,6 +93,9 @@ class ChatClient:
             return username, True
         return username, False
 
+    '''
+        Displays username accounts for the user to preview given prompt
+    '''
     def display_accounts(self):
         recipient = input("What users would you like to see? Use a regular expression. Enter nothing to skip.\n")
         new_text = chat.Text()
@@ -89,6 +104,9 @@ class ChatClient:
         for response in self.connection.display_accounts(new_text):
             print(response.text)
     
+    '''
+        Sends 
+    '''
     def send_chat_message(self):
         recipient = input("Who do you want to send a message to?\n")
         new_text = chat.Text()
