@@ -36,10 +36,7 @@ class ChatClient:
             self.show_users()
             self.receive_messages()
 
-            # Try again because recipient invalid
-            while self.send_chat_message() == False:
-                pass
-            
+            self.send_chat_message()   
             self.receive_messages()
 
             self.delete_or_logout()
@@ -54,8 +51,11 @@ class ChatClient:
             if len(recipient) == 0:
                 return
 
-            self.send(purpose=SHOW_ACCOUNTS, body=recipient)
-            response = self.receive()[0] # TODO: check this later
+            if not self.send(purpose=SHOW_ACCOUNTS, body=recipient):
+                print("Please enter a shorter regular expression.")
+                continue
+
+            response = self.receive()
 
             # Check if it's an error
             if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
@@ -69,11 +69,17 @@ class ChatClient:
         # Prompts user for username
         username = input("What's your username?\n")
         if purpose == "0":
-            self.send(purpose=REGISTER,body=username)
+            success = self.send(purpose=REGISTER,body=username)
+            if not success:
+                print("Please enter a shorter username.")
+                return None, False
         elif purpose == "1":
-            self.send(purpose=LOGIN,body=username)
+            success = self.send(purpose=LOGIN,body=username)
+            if not success:
+                print("Please enter a shorter username.")
+                return None, False
         
-        response = self.receive()[0] # TODO: bandaid solution
+        response = self.receive()
         if response[PURPOSE] == NOTIFY and response[BODY] == LOGIN_SUCCESSFUL:
             self.logged_in = True
             self.username = username
@@ -91,37 +97,55 @@ class ChatClient:
                 username, logged_in = self.enter_user(action)
         self.username = username
         self.logged_in = logged_in
-            
     
-    def send_chat_message(self):
+
+    def verify_recipient(self):
         recipient = input("Who do you want to send a message to?\n")
-        self.send(purpose=CHECK_USER_EXISTS, body=recipient)
-        response = self.receive()[0] # TODO: bandaid solution
+        success = self.send(purpose=CHECK_USER_EXISTS, body=recipient)
+        if not success:
+            print("Please enter a shorter username.")
+            return None
+        
+        response = self.receive()
 
         if response[PURPOSE] == NOTIFY and response[BODY] == USER_DOES_NOT_EXIST:
-            return False
+            return None
         
+        return recipient
+
+    
+    def verify_message(self, recipient):
         message = input("What's your message?\n")
-        self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
-        response = self.receive()[0] # TODO: bandaid solution
+        success = self.send(purpose=SEND_MESSAGE, body=message, sender=self.username, recipient=recipient)
+        if not success:
+            print("Please enter a shorter message.")
+            return False
+
         return True
+        
+    
+    def send_chat_message(self):
+        recipient = self.verify_recipient()
+        while not recipient:
+            recipient = self.verify_recipient()
+
+        while not self.verify_message(recipient):
+            pass
+        
+        response = self.receive()
     
 
     def receive_messages(self):
         if not self.logged_in:
             return
         
-        self.send(purpose=PULL_MESSAGE, body="")
+        self.send(purpose=PULL_MESSAGE, body=" ")
 
-        no_more_data = False
-        responses = self.receive()
-        while no_more_data == False:
-            for response in responses:
-                if response[PURPOSE] == NO_MORE_DATA:
-                    no_more_data = True
-                    print("No more messages.")
-                    return
-            responses = self.receive()
+        response = self.receive()
+        while True:
+            if response[PURPOSE] == NO_MORE_DATA:
+                return
+            response = self.receive()
     
 
     def delete_or_logout(self):
@@ -132,7 +156,7 @@ class ChatClient:
         
         if action == "0":
             self.send(purpose=DELETE_ACCOUNT, body=self.username)
-            response = self.receive()[0] # TODO: bandaid solution
+            response = self.receive()
             if response[PURPOSE] == NOTIFY and response[BODY] == DELETION_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
@@ -140,7 +164,7 @@ class ChatClient:
         
         elif action == "1":
             self.send(purpose=LOGOUT,body=self.username)
-            response = self.receive()[0] # TODO: bandaid solution
+            response = self.receive()
             if response[PURPOSE] == NOTIFY and response[BODY] == LOGOUT_SUCCESSFUL:
                 self.logged_in = False
                 self.username = None
@@ -160,16 +184,22 @@ class ChatClient:
         return data
 
 
-    def send(self,purpose, body, recipient=None, sender=None):
+    def send(self, purpose, body, recipient=None, sender=None):
         msg = self.create_message(purpose, body, recipient, sender)
         try:
-            self.client.send(msg.encode(FORMAT))
+            encoded_message = msg.encode(FORMAT)
+            if len(encoded_message) > MAX_BANDWIDTH:
+                return False
+            
+            encoded_message = encoded_message.ljust(MAX_BANDWIDTH, b'0')
+            self.client.send(encoded_message)
         except:
             raise ValueError
+        
+        return True
 
     
-    # Can be multiple messages in one full_message
-    def parse_messages(self, full_message, parsed_messages):
+    def parse_message(self, full_message):
         split_message = full_message.split("/")
         parsed_message = {}
         i = 0
@@ -181,21 +211,11 @@ class ChatClient:
             else:
                 body = "/".join(split_message[i+1:])
                 length = int(parsed_message[LENGTH])
-                parsed_message[LENGTH] = length
                 parsed_message[part] = body[:length]
-
-                # considering the case where there are multiple messages
-                if len(body) > length:
-                    remainder_of_message = body[length:]
-                    end_parsed = self.parse_messages(remainder_of_message, [])
-                    parsed_messages += end_parsed
-                
-                return [parsed_message] + parsed_messages
+                break
             i += 1
         
-        # TODO/CHECK: can we have it such that a message is too long to be sent in one go
-        # WHAT DO WE DO THEN
-        return parsed_messages
+        return parsed_message
     
 
     def receive(self):
@@ -204,11 +224,10 @@ class ChatClient:
         except:
             raise ValueError
         
-        parsed_messages = self.parse_messages(full_message, [])
+        parsed_message = self.parse_message(full_message)
 
-        for parsed_message in parsed_messages:
-            if parsed_message[PURPOSE] == NOTIFY:
-                body = parsed_message[BODY]
-                print(body)
+        if parsed_message[PURPOSE] == NOTIFY:
+            body = parsed_message[BODY]
+            print(body)
 
-        return parsed_messages
+        return parsed_message

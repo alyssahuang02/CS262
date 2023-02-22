@@ -218,11 +218,17 @@ class ChatServer:
     
     def send(self, conn, purpose, body, recipient=None, sender=None):
         msg = self.create_message(purpose, body, recipient, sender)
-        print(msg)
         try:
-            conn.send(msg.encode(FORMAT))
+            encoded_message = msg.encode(FORMAT)
+            if len(encoded_message) > MAX_BANDWIDTH:
+                return False
+            
+            encoded_message = encoded_message.ljust(MAX_BANDWIDTH, b'0')
+            conn.send(encoded_message)
         except:
             raise ValueError
+        
+        return True
 
 
     def parse_message(self, full_message):
