@@ -5,7 +5,8 @@ Assumes users have conda installed. This links helps with installation problems:
 ## Wire Protocol
 ### Setup
 1. Setup a new environment through `spec-file.txt`. Run `conda create --name <env> --file spec-file.txt`
-2. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server. To find hostname, enter `hostname` on your terminal.
+2. Run `conda activate <env>`
+3. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server. To find hostname, enter `hostname` on your terminal.
 
 ### Running the Server
 1. Open a new terminal session
