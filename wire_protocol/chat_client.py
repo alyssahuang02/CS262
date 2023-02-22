@@ -9,23 +9,17 @@ class ChatClient:
         self.client.connect(ADDR)
     
     def disconnect(self):
-        print("Disconecting...")
+        print("Network error detected. Disconecting and reconnecting...")
         self.send(purpose=LOGOUT,body=self.username)
-        print("Logged out!")
-        self.client.close() # TODO: check this! idk if this is right
-    
+        self.run()
 
-    def __init__(self, test=False):
-        if test:
-            return
-        
+    
+    def run(self):
         try:
             self.connect()
         except:
             print("Could not connect to server.")
             return
-        
-        atexit.register(self.disconnect)
 
         self.logged_in = False
         self.username = None
@@ -47,6 +41,15 @@ class ChatClient:
 
             self.delete_or_logout()
             self.receive_messages()
+    
+
+    def __init__(self, test=False):
+        if test:
+            return
+        
+        atexit.register(self.disconnect)
+
+        self.run()
     
 
     def show_users(self):
@@ -75,6 +78,10 @@ class ChatClient:
         # Prompts user for username
         while True:
             username = input("What's your username?\n")
+            if "/" in username:
+                print("Username cannot contain '/'.")
+                continue
+
             if len(username) != 0:
                 break
         
@@ -240,10 +247,14 @@ class ChatClient:
         except:
             raise ValueError
         
-        parsed_message = self.parse_message(full_message)
+        try:
+            parsed_message = self.parse_message(full_message)
 
-        if parsed_message[PURPOSE] == NOTIFY:
-            body = parsed_message[BODY]
-            print(body)
+            if parsed_message[PURPOSE] == NOTIFY:
+                body = parsed_message[BODY]
+                print(body)
 
-        return parsed_message
+            return parsed_message
+        
+        except:
+            print("")

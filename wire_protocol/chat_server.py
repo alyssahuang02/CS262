@@ -180,12 +180,9 @@ class ChatServer:
                 no_accounts_found_length = len(matched_accounts)
             
                 for account in self.accounts:
-                    x = re.search(username, account)
-                    if x is not None:
-                        matched_accounts+= account + "\n"
-
-                    # if account.startswith(username):
-                    #     matched_accounts += account + "\n"
+                    if account.startswith(username):
+                        matched_accounts += account + "\n"
+                
                 if len(matched_accounts) == no_accounts_found_length:
                     self.send(conn, NOTIFY, USER_DOES_NOT_EXIST)
                 else:
