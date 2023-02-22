@@ -251,7 +251,7 @@ class ChatServer:
             full_message = conn.recv(MAX_BANDWIDTH).decode(FORMAT)
             return self.parse_message(full_message)
         except:
-            return self.receive()
+            return self.receive(conn)
 
         
     # Notes: new thread for each client! (do we have to log them out?)
