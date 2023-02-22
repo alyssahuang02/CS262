@@ -8,7 +8,8 @@ Engineering Ledger: https://docs.google.com/document/d/14WZj8c5G9HihEbKv3AtZY1nq
 ### Setup
 1. Setup a new environment through `spec-file.txt`. Run `conda create --name <env> --file spec-file.txt`
 2. Run `conda activate <env>`
-3. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server. To find hostname, enter `hostname` on your terminal.
+3. Navigate to `wire_protocol` folder through `cd wire_protocol`
+4. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server. To find hostname, enter `hostname` on your terminal.
 
 ### Running the Server
 1. Open a new terminal session
@@ -25,7 +26,8 @@ Engineering Ledger: https://docs.google.com/document/d/14WZj8c5G9HihEbKv3AtZY1nq
 ### Setup
 1. Setup a new environment through `spec-file.txt`. Run `conda create --name <env> --file spec-file.txt`
 2. Run `conda activate <env>`
-3. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server.
+3. Navigate to `gRPC` folder through `cd gRPC`
+4. Change the server address `SERVER` value in `commands.py` to the `hostname` of your server.
 
 ### Running the Server
 1. Open a new terminal session
